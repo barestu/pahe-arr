@@ -1,0 +1,40 @@
+{{define "content"}}
+<div class="page-head">
+  <h1>Queue</h1>
+  <button class="btn ghost small" type="button" hx-post="/jobs/clear" hx-target="#jobs">Clear finished</button>
+</div>
+{{if .Data.Added}}<div class="alert ok">Added {{.Data.Added}} episode(s).</div>{{end}}
+<div id="jobs" hx-get="/queue/list" hx-trigger="every 2s" hx-swap="innerHTML">{{template "joblist" .Data}}</div>
+{{end}}
+
+{{define "joblist"}}
+{{if not .Jobs}}<p class="muted empty">Nothing here yet. <a href="/">Search for an anime</a> to queue episodes.</p>{{end}}
+<ul class="jobs">
+  {{range .Jobs}}
+  <li class="job">
+    <div class="job-main">
+      <div class="job-title">{{.AnimeTitle}} <span class="muted">· episode {{.EpisodeNumber}}</span></div>
+      <div class="job-meta">
+        <span class="badge {{statusClass .Status}}">{{.Status}}</span>
+        <span>{{if .GotQual}}{{.GotQual}}p{{else if eq .Quality 9999}}best{{else}}{{.Quality}}p{{end}} · {{if eq .Audio "eng"}}dub{{else}}sub{{end}}</span>
+        {{if .Import}}<span>→ Sonarr{{if .SonarrSeriesTitle}}: {{.SonarrSeriesTitle}}{{end}}</span>{{end}}
+        {{if .Attempts}}<span>retry {{.Attempts}}/2</span>{{end}}
+        <span class="muted">{{since .UpdatedAt}}</span>
+      </div>
+      {{if eq .Status "downloading"}}
+      <progress max="100" value="{{.Percent}}" aria-label="Download progress">{{.Percent}}%</progress>
+      <div class="hint">{{.Done}} / {{.Total}} segments · {{.Percent}}%{{if .Via}} · {{.Via}}{{end}}</div>
+      {{end}}
+      {{if .Error}}<div class="job-error">{{.Error}}</div>{{end}}
+      {{if .Warning}}<div class="hint">{{.Warning}}</div>{{end}}
+      {{if and (eq .Status "done") .Output (not .Import)}}<div class="hint">Saved to {{.Output}}</div>{{end}}
+    </div>
+    <div class="job-actions">
+      {{if not (finished .Status)}}<button class="btn small ghost" type="button" hx-post="/jobs/{{.ID}}/cancel" hx-target="#jobs">Cancel</button>{{end}}
+      {{if or (eq .Status "failed") (eq .Status "canceled")}}<button class="btn small" type="button" hx-post="/jobs/{{.ID}}/retry" hx-target="#jobs">Retry</button>{{end}}
+      {{if finished .Status}}<button class="btn small ghost" type="button" hx-post="/jobs/{{.ID}}/remove" hx-target="#jobs">Remove</button>{{end}}
+    </div>
+  </li>
+  {{end}}
+</ul>
+{{end}}

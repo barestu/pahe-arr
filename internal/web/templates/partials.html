@@ -1,0 +1,2 @@
+{{define "msg"}}{{if .Error}}<div class="alert bad">{{.Error}}</div>{{end}}{{end}}
+{{define "testresult"}}<div class="alert {{if .OK}}ok{{else}}bad{{end}}">{{.Message}}</div>{{end}}

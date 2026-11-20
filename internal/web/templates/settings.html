@@ -1,0 +1,101 @@
+{{define "content"}}
+{{with .Data}}
+<h1>Settings</h1>
+{{if .Saved}}<div class="alert ok">Settings saved.</div>{{end}}
+{{if .Error}}<div class="alert bad">{{.Error}}</div>{{end}}
+<form id="settings-form" method="post" action="/settings" class="settings">
+
+  <section class="card">
+    <h2>animepahe</h2>
+    <div class="field">
+      <label for="paheDomain">animepahe URL</label>
+      <div class="row">
+        <input id="paheDomain" name="paheDomain" value="{{.S.PaheDomain}}" placeholder="animepahe.pw" autocomplete="off">
+        <button type="button" class="btn" hx-post="/settings/test/pahe" hx-include="#settings-form" hx-target="#t-pahe" hx-indicator="#i-pahe">Test</button>
+        <span id="i-pahe" class="htmx-indicator spinner" aria-hidden="true"></span>
+      </div>
+      <p class="hint">The domain your browser opens for animepahe. It moves from time to time; the test tells you if this one is live. Takes up to a minute.</p>
+      <div id="t-pahe" aria-live="polite"></div>
+    </div>
+    <div class="field">
+      <label for="flareSolverrUrl">FlareSolverr URL</label>
+      <div class="row">
+        <input id="flareSolverrUrl" name="flareSolverrUrl" value="{{.S.FlareSolverrURL}}" placeholder="http://192.168.100.11:8191" autocomplete="off">
+        <button type="button" class="btn" hx-post="/settings/test/flaresolverr" hx-include="#settings-form" hx-target="#t-fs" hx-indicator="#i-fs">Test</button>
+        <span id="i-fs" class="htmx-indicator spinner" aria-hidden="true"></span>
+      </div>
+      <p class="hint">Passes animepahe's Cloudflare check. Byparr works here too.</p>
+      <div id="t-fs" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Output</h2>
+    <div class="field">
+      <label for="outputDir">Output folder</label>
+      <div class="row">
+        <input id="outputDir" name="outputDir" value="{{.S.OutputDir}}" placeholder="/DATA/.manual-import" autocomplete="off">
+        <button type="button" class="btn" hx-post="/settings/test/output" hx-include="#settings-form" hx-target="#t-out" hx-indicator="#i-out">Test</button>
+        <span id="i-out" class="htmx-indicator spinner" aria-hidden="true"></span>
+      </div>
+      <p class="hint">Path inside this container. Keep it on the same disk as your library so Sonarr's move is instant.</p>
+      <div id="t-out" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Sonarr</h2>
+    <div class="field">
+      <label for="sonarrUrl">Sonarr URL</label>
+      <input id="sonarrUrl" name="sonarrUrl" value="{{.S.SonarrURL}}" placeholder="http://192.168.100.11:8989" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="sonarrApiKey">API key</label>
+      <input id="sonarrApiKey" name="sonarrApiKey" type="password" value="" placeholder="{{if .HasAPIKey}}Saved. Leave blank to keep it{{else}}Sonarr → Settings → General{{end}}" autocomplete="off">
+      {{if .HasAPIKey}}<label class="check"><input type="checkbox" name="clearApiKey"> Remove the saved key</label>{{end}}
+    </div>
+    <div class="field">
+      <label for="sonarrOutputDir">Output folder as Sonarr sees it</label>
+      <input id="sonarrOutputDir" name="sonarrOutputDir" value="{{.S.SonarrOutputDir}}" placeholder="Same as output folder" autocomplete="off">
+      <p class="hint">Only needed if Sonarr mounts the disk at a different path than this container.</p>
+    </div>
+    <div class="row">
+      <button type="button" class="btn" hx-post="/settings/test/sonarr" hx-include="#settings-form" hx-target="#t-sonarr" hx-indicator="#i-sonarr">Test Sonarr</button>
+      <span id="i-sonarr" class="htmx-indicator spinner" aria-hidden="true"></span>
+    </div>
+    <div id="t-sonarr" aria-live="polite"></div>
+  </section>
+
+  <section class="card">
+    <h2>Download defaults</h2>
+    <p class="hint">Pre-selected on each anime page; you can change them every time you queue.</p>
+    <div class="grid2">
+      <div class="field">
+        <label for="defaultQuality">Quality</label>
+        <select id="defaultQuality" name="defaultQuality">
+          {{range .Qualities}}<option value="{{.}}" {{if eq . $.Data.S.DefaultQuality}}selected{{end}}>{{if eq . 9999}}Best available{{else}}{{.}}p{{end}}</option>{{end}}
+        </select>
+      </div>
+      <div class="field">
+        <label for="defaultAudio">Audio</label>
+        <select id="defaultAudio" name="defaultAudio">
+          <option value="jpn" {{if eq .S.DefaultAudio "jpn"}}selected{{end}}>Japanese (sub)</option>
+          <option value="eng" {{if eq .S.DefaultAudio "eng"}}selected{{end}}>English (dub)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="concurrency">Parallel segments</label>
+        <input id="concurrency" name="concurrency" type="number" min="1" max="4" value="{{.S.Concurrency}}">
+      </div>
+      <div class="field">
+        <label for="delaySeconds">Pause between episodes (seconds)</label>
+        <input id="delaySeconds" name="delaySeconds" type="number" min="0" max="60" value="{{.S.DelaySeconds}}">
+      </div>
+    </div>
+    <label class="check"><input type="checkbox" name="defaultAutoImport" {{if .S.DefaultAutoImport}}checked{{end}}> Send to Sonarr after download, when a matching series is found</label>
+  </section>
+
+  <div class="actions"><button class="btn primary" type="submit">Save settings</button></div>
+</form>
+{{end}}
+{{end}}

@@ -1,0 +1,30 @@
+{{define "base"}}<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="htmx-config" content='{"includeIndicatorStyles":false}'>
+<title>{{.Title}} · pahe-arr</title>
+<link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/app.css">
+<script src="/static/htmx.min.js" defer></script>
+<script src="/static/app.js" defer></script>
+</head>
+<body>
+{{if .Nav}}
+<header class="top">
+  <a class="brand" href="/"><img src="/static/icon.svg" alt="" width="22" height="22"> pahe-arr</a>
+  <nav aria-label="Main">
+    <a href="/" {{if eq .Nav "search"}}aria-current="page"{{end}}>Search</a>
+    <a href="/queue" {{if eq .Nav "queue"}}aria-current="page"{{end}}>Queue</a>
+    <a href="/settings" {{if eq .Nav "settings"}}aria-current="page"{{end}}>Settings</a>
+  </nav>
+  {{if .AuthEnabled}}<form method="post" action="/logout" class="logout"><button class="btn ghost small" type="submit">Log out</button></form>{{end}}
+</header>
+{{end}}
+<main>
+{{if and .Nav (ne .Nav "settings") (not .Ready)}}<div class="alert warn">Finish setup in <a href="/settings">Settings</a>: add the animepahe URL and FlareSolverr.</div>{{end}}
+{{template "content" .}}
+</main>
+</body>
+</html>{{end}}

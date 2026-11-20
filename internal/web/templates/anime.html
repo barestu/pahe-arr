@@ -1,0 +1,73 @@
+{{define "content"}}
+{{with .Data}}
+<p class="crumbs"><a href="/">Search</a> <span aria-hidden="true">/</span> {{.Title}}</p>
+<h1>{{.Title}}</h1>
+{{if .Error}}<div class="alert bad">{{.Error}}</div>{{else}}
+<form id="queue-form" hx-post="/queue" hx-indicator="#queue-ind">
+  <input type="hidden" name="session" value="{{.Session}}">
+  <input type="hidden" name="title" value="{{.Title}}">
+  <div class="layout">
+    <section class="card">
+      <div class="card-head">
+        <h2>Episodes <span class="muted">{{len .Episodes}}</span></h2>
+        <div class="range">
+          <label for="range" class="sr-only">Episodes to select</label>
+          <input id="range" type="text" placeholder="1-12, 15" data-range-input>
+          <button type="button" class="btn small" data-range-apply>Select</button>
+          <button type="button" class="btn small ghost" data-select="all">All</button>
+          <button type="button" class="btn small ghost" data-select="none">None</button>
+        </div>
+      </div>
+      <p class="hint">Click to toggle; Shift-click selects a run.</p>
+      <div class="ep-grid">
+        {{range .Episodes}}<label class="ep"><input type="checkbox" name="ep" value="{{.Number}}|{{.Session}}|{{.Label}}" data-ep="{{.Number}}"><span>{{.Number}}</span></label>{{end}}
+      </div>
+    </section>
+
+    <aside class="card options">
+      <h2>Options</h2>
+      <label for="quality">Quality</label>
+      <select id="quality" name="quality">
+        {{range .Qualities}}<option value="{{.}}" {{if eq . $.Data.Quality}}selected{{end}}>{{if eq . 9999}}Best available{{else}}{{.}}p{{end}}</option>{{end}}
+      </select>
+      <p class="hint">If an episode doesn't have it, the closest quality is used.</p>
+
+      <label for="audio">Audio</label>
+      <select id="audio" name="audio">
+        <option value="jpn" {{if eq .Audio "jpn"}}selected{{end}}>Japanese (sub)</option>
+        <option value="eng" {{if eq .Audio "eng"}}selected{{end}}>English (dub)</option>
+      </select>
+
+      <h3>Sonarr</h3>
+      {{if .SonarrOn}}
+        {{if .SonarrErr}}<div class="alert bad">{{.SonarrErr}}</div>{{end}}
+        <label class="check"><input type="checkbox" name="import" {{if and .AutoImport .DefaultID}}checked{{end}} data-toggles="#sonarr-opts"> Send to Sonarr after download</label>
+        <div id="sonarr-opts" class="sub">
+          <label for="series">Series in Sonarr</label>
+          <select id="series" name="series">
+            <option value="">Choose…</option>
+            {{if .Suggested}}<optgroup label="Best matches">{{range .Suggested}}<option value="{{.ID}}" data-type="{{.SeriesType}}" {{if eq .ID $.Data.DefaultID}}selected{{end}}>{{.Title}}{{if .Year}} ({{.Year}}){{end}}</option>{{end}}</optgroup>{{end}}
+            {{if .AllSeries}}<optgroup label="All series">{{range .AllSeries}}<option value="{{.ID}}" data-type="{{.SeriesType}}">{{.Title}}{{if .Year}} ({{.Year}}){{end}}</option>{{end}}</optgroup>{{end}}
+          </select>
+          <fieldset>
+            <legend>Episode numbers</legend>
+            <label class="check"><input type="radio" name="numbering" value="absolute" {{if .DefaultAbs}}checked{{end}}> Absolute (anime)</label>
+            <label class="check"><input type="radio" name="numbering" value="season" {{if not .DefaultAbs}}checked{{end}}> Season <input type="number" name="season" min="1" value="1" class="tiny" aria-label="Season number"></label>
+          </fieldset>
+          <label for="offset">Offset</label>
+          <input id="offset" name="offset" type="number" value="0" class="tiny">
+          <p class="hint">Added to animepahe's episode number. Use it when animepahe lists a sequel as its own show starting at 1 but Sonarr continues the numbering, e.g. 1 → 26 means offset 25.</p>
+        </div>
+      {{else}}
+        <p class="hint">Connect Sonarr in <a href="/settings">Settings</a> to import automatically. Otherwise files stay in the output folder for manual import.</p>
+      {{end}}
+
+      <div id="form-msg" aria-live="polite"></div>
+      <button class="btn primary block" type="submit">Queue <span data-count>0</span> episodes</button>
+      <span id="queue-ind" class="htmx-indicator spinner" aria-hidden="true"></span>
+    </aside>
+  </div>
+</form>
+{{end}}
+{{end}}
+{{end}}

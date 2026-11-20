@@ -1,0 +1,25 @@
+{{define "content"}}
+<h1>Find an anime</h1>
+<form class="search" action="/search" method="get" hx-get="/search" hx-target="#results" hx-push-url="true" hx-indicator="#search-ind" role="search">
+  <label for="q" class="sr-only">Anime title</label>
+  <input id="q" name="q" type="search" placeholder="Title, e.g. Death Note" value="{{.Data.Q}}" autofocus autocomplete="off">
+  <button class="btn primary" type="submit">Search</button>
+  <span id="search-ind" class="htmx-indicator spinner" aria-hidden="true"></span>
+</form>
+<div id="results" aria-live="polite">{{template "results" .Data}}</div>
+{{end}}
+
+{{define "results"}}
+{{if .Error}}<div class="alert bad">{{.Error}}</div>
+{{else if .Results}}
+<ul class="results">
+  {{range .Results}}
+  <li><a href="/anime/{{.Session}}?t={{.Title}}">
+    <span class="r-title">{{.Title}}</span>
+    <span class="r-meta">{{.Type}}{{if .Episodes}} · {{.Episodes}} eps{{end}}{{if .Year}} · {{.Year}}{{end}}{{if .Status}} · {{.Status}}{{end}}</span>
+  </a></li>
+  {{end}}
+</ul>
+{{else if .Searched}}<p class="muted">No results for “{{.Q}}”.</p>
+{{end}}
+{{end}}

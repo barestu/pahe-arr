@@ -1,0 +1,11 @@
+{{define "content"}}
+<section class="card login">
+  <h1><img src="/static/icon.svg" alt="" width="28" height="28"> pahe-arr</h1>
+  {{if .Data.Error}}<div class="alert bad">Wrong password.</div>{{end}}
+  <form method="post" action="/login">
+    <label for="password">Password</label>
+    <input id="password" type="password" name="password" autofocus required autocomplete="current-password">
+    <button class="btn primary block" type="submit">Log in</button>
+  </form>
+</section>
+{{end}}

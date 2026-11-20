@@ -1,0 +1,23 @@
+# Build and start:   sudo docker compose up -d --build
+# Web UI:            http://<server-ip>:8585
+# CLI inside it:     sudo docker compose exec pahe-arr pahe doctor
+name: pahe-arr
+services:
+  pahe-arr:
+    build: .
+    image: pahe-arr:local
+    container_name: pahe-arr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=Asia/Jakarta
+      - PAHE_PASSWORD=${PAHE_PASSWORD:?Create a .env file with PAHE_PASSWORD=yourpassword}
+      - PAHE_DOMAIN=animepahe.pw                    # first-run default; edit later in Settings
+      - FLARESOLVERR_URL=http://192.168.100.11:8191 # first-run default; edit later in Settings
+    volumes:
+      - /DATA/AppData/pahe-arr/config:/config
+      - "/mnt/Dragonsreach/[MOVIES]:/DATA"
+    ports:
+      - "8585:8585"
+    restart: unless-stopped
