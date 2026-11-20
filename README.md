@@ -4,7 +4,7 @@ A lightweight animepahe downloader with a web UI for a CasaOS / *arr homelab. Se
 pick episodes, download them, and hand them to Sonarr, which renames them into your library
 and tells Jellyfin.
 
-- One static Go binary (standard library only) + ffmpeg on Alpine
+- One static Go binary + ffmpeg on Alpine
 - No browser: FlareSolverr passes Cloudflare; kwik and HLS are handled in Go
 - Queue survives restarts; one episode at a time, 2 automatic retries, cancel and retry
 - Settings in the web UI, each with a **Test** button
@@ -33,6 +33,20 @@ sudo docker image prune -f
 ```
 
 `.env` isn't in the zip, so your password survives updates.
+
+## Local development
+
+With Go 1.22 or newer and Make installed, run `make run` from the repository root and open
+`http://localhost:8585`. Local settings and queue data default to `/tmp/pahe`.
+Set `PAHE_CONFIG_DIR` to store them elsewhere.
+
+```bash
+PAHE_CONFIG_DIR=/path/to/config make run
+```
+
+- `make` or `make check` runs `go vet ./...` followed by `go test ./...`.
+- `make test` runs the full test suite.
+- To run a single test, use `go test ./internal/hls -run TestName`.
 
 ## Using it
 
