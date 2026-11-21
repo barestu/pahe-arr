@@ -1,13 +1,22 @@
 # ---- build: static Go binary ----
-FROM golang:1.22-alpine AS build
+FROM --platform=$BUILDPLATFORM golang:1.22-alpine AS build
+ARG TARGETOS=linux
+ARG TARGETARCH
+ARG VERSION=dev
+ARG REVISION=unknown
 WORKDIR /src
 COPY go.mod go.sum* ./
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/pahe ./cmd/pahe
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -ldflags="-s -w -X pahe-arr/internal/buildinfo.Version=$VERSION -X pahe-arr/internal/buildinfo.Commit=$REVISION" -o /out/pahe ./cmd/pahe
 
 # ---- runtime: alpine + ffmpeg ----
 FROM alpine:3.20
+ARG VERSION=dev
+ARG REVISION=unknown
+LABEL org.opencontainers.image.source="https://github.com/barestu/pahe-arr" \
+      org.opencontainers.image.version=$VERSION \
+      org.opencontainers.image.revision=$REVISION
 RUN apk add --no-cache ffmpeg ca-certificates tzdata su-exec
 COPY --from=build /out/pahe /usr/local/bin/pahe
 COPY docker/entrypoint.sh /entrypoint.sh

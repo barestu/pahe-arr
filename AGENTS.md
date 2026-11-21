@@ -6,9 +6,11 @@ Go web app + CLI (`cmd/pahe`) that downloads animepahe episodes and hands them t
 
 - Run `make check` (the default for `make`) to run `go vet ./...` followed by `go test ./...`. Keep `gofmt` clean.
 - Run the full test suite with `make test` or a single test with `go test ./internal/hls -run TestName`. Tests use `httptest` and `t.TempDir()` and require neither external services nor ffmpeg.
-- Start the local web app with `make run`. It defaults `PAHE_CONFIG_DIR` to `/tmp/pahe`. Override it with `PAHE_CONFIG_DIR=/path/to/config make run`.
+- Start the local web app with `make run` or `go run ./cmd/pahe serve`. Copy `.env.example` to `.env` first; it uses `./tmp/config` and `./tmp/downloads`.
 - `doctor`, `search`, and `download` need a live animepahe domain and FlareSolverr. `download` also needs `ffmpeg` on PATH.
-- Build and deploy on the server with `docker compose up -d --build`. Compose requires `PAHE_PASSWORD` in `.env` and mounts server paths under `/DATA/AppData/...` and `/mnt/Dragonsreach/...`.
+- Build and deploy on the server with `docker compose up -d --build`. Copy `.env.server.example` to `.env` and set `PAHE_PASSWORD`; host folders are configurable and default to `./data/config` and `./data/downloads`.
+- Follow `CONTRIBUTING.md`: short-lived branches, PRs, green CI, squash merge. Publish only from validated version tags on main. Never create or move a release tag without an explicit release request.
+- Use `feat/`, `fix/`, `chore/`, or `docs/` branch prefixes; do not create `codex/` branches.
 
 ## Constraints
 

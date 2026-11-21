@@ -11,6 +11,57 @@ and tells Jellyfin.
 
 ## Install
 
+### Published releases (Docker Compose)
+
+After the first release is published, download `compose.release.yml` from
+[GitHub Releases](https://github.com/barestu/pahe-arr/releases). Place it in a
+folder on your server and create a `.env` alongside it with `PAHE_PASSWORD` set
+to your own password. Start it with:
+
+```sh
+docker compose -f compose.release.yml up -d
+```
+
+Config and downloads default to `./data/config` and `./data/downloads` relative
+to the Compose file. Override `PAHE_HOST_CONFIG_DIR`, `PAHE_HOST_DOWNLOAD_DIR`,
+`PUID`, `PGID`, and `TZ` in `.env` as needed. This file runs only pahe-arr.
+Set `FLARESOLVERR_URL` to your existing service's container-reachable address in
+`.env`, or enter it in web Settings. Open port 8585, then set and test the
+animepahe domain and FlareSolverr URL in Settings.
+
+If you need FlareSolverr, also download `compose.flaresolverr.yml` into the same
+folder and include it as an optional overlay:
+
+```sh
+docker compose -f compose.release.yml -f compose.flaresolverr.yml up -d
+```
+
+The overlay adds FlareSolverr on the private Compose network and seeds its URL as
+`http://flaresolverr:8191`. It does not publish an extra host port. Keep both `-f`
+arguments for later updates and `down`. Existing saved settings take precedence;
+update the URL in Settings when switching between external and bundled services.
+
+For CasaOS, use **App Store → Custom Install → Import** with the same file.
+Before importing, replace the `${...}` expressions with your actual values
+(including a password and absolute host folder paths) if the importer cannot
+resolve `.env`. The optional `x-casaos` metadata adds dashboard labels; Docker
+Compose ignores it. No CasaOS installation is required to run this stack.
+To import the optional bundle, first combine the files using
+`docker compose -f compose.release.yml -f compose.flaresolverr.yml config`, then
+import the resulting YAML. It contains your resolved password, so keep it private.
+
+Use the release attachment to install an exact image version. The repository's
+`deploy/compose.release.yml` tracks `latest` and is a template for future releases; it will
+not install until a public image exists. If your DNS redirects animepahe to a block
+page, configure working DNS for both services. Configure Sonarr separately if used.
+
+For upgrades, back up config and change the image version in your Compose file
+or container manager. The pipeline
+publishes images but never automatically updates your server.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for Git rules and the release procedure.
+
+### Build from source
+
 On the server:
 
 ```bash

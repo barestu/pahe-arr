@@ -1,0 +1,43 @@
+name: pahe-arr
+services:
+  pahe-arr:
+    image: ghcr.io/barestu/pahe-arr:latest
+    restart: unless-stopped
+    environment:
+      PAHE_PASSWORD: ${PAHE_PASSWORD:?Set PAHE_PASSWORD before starting}
+      PAHE_OUTPUT_DIR: /config/downloads
+      FLARESOLVERR_URL: ${FLARESOLVERR_URL:-}
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
+      TZ: ${TZ:-UTC}
+    ports:
+      - "8585:8585"
+    volumes:
+      - "${PAHE_HOST_CONFIG_DIR:-./data/config}:/config"
+      - "${PAHE_HOST_DOWNLOAD_DIR:-./data/downloads}:/config/downloads"
+    x-casaos:
+      envs:
+        - container: PAHE_PASSWORD
+          description:
+            en_US: Set a private login password before installing.
+      volumes:
+        - container: /config
+          description:
+            en_US: Settings and queue. Choose a persistent host folder.
+        - container: /config/downloads
+          description:
+            en_US: Completed videos. Choose your download disk/folder.
+x-casaos:
+  architectures: [amd64, arm64]
+  main: pahe-arr
+  author: barestu
+  category: Media
+  title:
+    en_US: pahe-arr
+  tagline:
+    en_US: Download anime episodes and import them into Sonarr.
+  description:
+    en_US: Choose host storage folders and set PAHE_PASSWORD before installation. Configure the animepahe domain in Settings after startup.
+  port_map: "8585"
+  scheme: http
+  index: /
