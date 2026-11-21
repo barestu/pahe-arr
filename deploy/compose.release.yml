@@ -4,17 +4,22 @@ services:
     image: ghcr.io/barestu/pahe-arr:latest
     restart: unless-stopped
     environment:
-      PAHE_PASSWORD: ${PAHE_PASSWORD:?Set PAHE_PASSWORD before starting}
+      # Set your own password before installing. Empty disables login.
+      PAHE_PASSWORD: ""
       PAHE_OUTPUT_DIR: /config/downloads
-      FLARESOLVERR_URL: ${FLARESOLVERR_URL:-}
-      PUID: ${PUID:-1000}
-      PGID: ${PGID:-1000}
-      TZ: ${TZ:-UTC}
+      FLARESOLVERR_URL: ""
+      PUID: "1000"
+      PGID: "1000"
+      TZ: UTC
     ports:
       - "8585:8585"
     volumes:
-      - "${PAHE_HOST_CONFIG_DIR:-./data/config}:/config"
-      - "${PAHE_HOST_DOWNLOAD_DIR:-./data/downloads}:/config/downloads"
+      - type: bind
+        source: ./data/config
+        target: /config
+      - type: bind
+        source: ./data/downloads
+        target: /config/downloads
     x-casaos:
       envs:
         - container: PAHE_PASSWORD
