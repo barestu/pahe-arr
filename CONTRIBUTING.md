@@ -32,7 +32,10 @@ versioning for the stable interface. Tags are the version source of truth; local
 builds report `dev`. `pahe version` shows the version and source commit; the UI
 footer shows the version. Keep user-visible changes in `CHANGELOG.md`.
 
-1. Merge and verify CI on `main`. Finalize the changelog in a PR before tagging.
+1. Finalize the changelog in a PR before tagging: move the release's entries from
+   `Unreleased` under its version heading (for example `0.1.0`), leaving an empty
+   `Unreleased` section for future changes. Merge and verify CI on `main`.
+   GitHub Release notes are generated automatically, but `CHANGELOG.md` is not.
 2. Fetch current main and create an annotated tag on that commit:
 
    ```sh
