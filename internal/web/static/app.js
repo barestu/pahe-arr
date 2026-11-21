@@ -1,4 +1,25 @@
 (() => {
+  const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
+  let theme;
+  try { theme = localStorage.getItem('pahe-theme'); } catch (_) {}
+  if (theme !== 'light' && theme !== 'dark') theme = null;
+  function applyTheme() {
+    const dark = theme ? theme === 'dark' : systemTheme.matches;
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    const button = document.querySelector('[data-theme-toggle]');
+    if (button) {
+      button.hidden = false;
+      button.textContent = dark ? 'Light mode' : 'Dark mode';
+      button.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+    }
+  }
+  applyTheme();
+  systemTheme.addEventListener('change', applyTheme);
+  window.addEventListener('storage', event => {
+    if (event.key !== 'pahe-theme' && event.key !== null) return;
+    theme = event.newValue === 'light' || event.newValue === 'dark' ? event.newValue : null;
+    applyTheme();
+  });
   const one = (s, r = document) => r.querySelector(s);
   const all = (s, r = document) => Array.from(r.querySelectorAll(s));
 
@@ -77,5 +98,15 @@
     });
   }
 
-  document.addEventListener('DOMContentLoaded', () => { initEpisodes(); initToggles(); });
+  document.addEventListener('DOMContentLoaded', () => {
+    applyTheme();
+    const button = one('[data-theme-toggle]');
+    if (button) button.addEventListener('click', () => {
+      theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      try { localStorage.setItem('pahe-theme', theme); } catch (_) {}
+      applyTheme();
+    });
+    initEpisodes();
+    initToggles();
+  });
 })();
