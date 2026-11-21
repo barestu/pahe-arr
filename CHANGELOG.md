@@ -9,4 +9,3 @@
 - Search/test loading descriptions and a persistent light/dark mode switch.
 - Version metadata in the CLI, UI, and container labels.
 - PR validation, tag-only multi-platform image releases, and portable Compose installer.
-
