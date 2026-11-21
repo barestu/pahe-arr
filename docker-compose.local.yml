@@ -1,0 +1,43 @@
+# Standalone local stack: docker compose -f docker-compose.local.yml up -d --build
+name: pahe-arr-dev
+services:
+  pahe-arr:
+    build: .
+    dns:
+      - 1.1.1.1
+      - 1.0.0.1
+    environment:
+      PUID: "1000"
+      PGID: "1000"
+      UMASK: "002"
+      PAHE_CONFIG_DIR: /config
+      PAHE_OUTPUT_DIR: /config/downloads
+      PAHE_LISTEN: :8585
+      PAHE_PASSWORD: ${PAHE_PASSWORD:-}
+      PAHE_DOMAIN: ${PAHE_DOMAIN:-}
+      FLARESOLVERR_URL: http://flaresolverr:8191
+    volumes:
+      - ./tmp/config:/config
+      # Nest under /config so the entrypoint sets ownership for both mounts.
+      - ./tmp/downloads:/config/downloads
+    ports:
+      - "127.0.0.1:8585:8585"
+    depends_on:
+      flaresolverr:
+        condition: service_healthy
+
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    dns:
+      - 1.1.1.1
+      - 1.0.0.1
+    environment:
+      LOG_LEVEL: info
+    ports:
+      - "127.0.0.1:8191:8191"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "--max-time", "5", "http://127.0.0.1:8191/"]
+      interval: 10s
+      timeout: 6s
+      retries: 12
+      start_period: 30s

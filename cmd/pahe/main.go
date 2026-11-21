@@ -19,6 +19,8 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/joho/godotenv"
+
 	"pahe-arr/internal/cf"
 	appconfig "pahe-arr/internal/config"
 	"pahe-arr/internal/grab"
@@ -55,6 +57,10 @@ Environment:
 `
 
 func main() {
+	if err := loadEnvFile(".env"); err != nil {
+		fmt.Fprintln(os.Stderr, "error loading .env:", err)
+		os.Exit(1)
+	}
 	if len(os.Args) < 2 {
 		fmt.Fprint(os.Stderr, usageText)
 		os.Exit(2)
@@ -85,6 +91,15 @@ func main() {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)
 	}
+}
+
+// Existing process environment wins; a missing .env is fine in production.
+func loadEnvFile(path string) error {
+	err := godotenv.Load(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	return err
 }
 
 type config struct {

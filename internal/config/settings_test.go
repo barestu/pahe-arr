@@ -19,6 +19,17 @@ func TestNormalizeDomain(t *testing.T) {
 	}
 }
 
+func TestRelativeOutputDefault(t *testing.T) {
+	t.Setenv("PAHE_OUTPUT_DIR", "./tmp/downloads")
+	want, err := filepath.Abs(filepath.Join("tmp", "downloads"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := Defaults().OutputDir; got != want {
+		t.Fatalf("output directory = %q, want %q", got, want)
+	}
+}
+
 func TestStoreRoundTripAndDefaults(t *testing.T) {
 	t.Setenv("PAHE_DOMAIN", "https://animepahe.pw/")
 	dir := t.TempDir()

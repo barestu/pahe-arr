@@ -21,7 +21,7 @@
   --shadow: 0 1px 2px rgba(16, 24, 40, .06);
 }
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     color-scheme: dark;
     --bg: #111317;
     --surface: #1a1d23;
@@ -42,6 +42,27 @@
     --busy-soft: #1b2a45;
     --shadow: none;
   }
+}
+:root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #111317;
+    --surface: #1a1d23;
+    --surface-2: #22262e;
+    --text: #e8eaee;
+    --muted: #9aa1ad;
+    --border: #2e333c;
+    --accent: #8b85ff;
+    --accent-text: #11131a;
+    --accent-soft: #262546;
+    --ok: #5fd08a;
+    --ok-soft: #16301f;
+    --bad: #ff8a80;
+    --bad-soft: #3a1b1a;
+    --warn: #f3c56b;
+    --warn-soft: #362a12;
+    --busy: #8ab4ff;
+    --busy-soft: #1b2a45;
+    --shadow: none;
 }
 
 * { box-sizing: border-box; }
@@ -154,9 +175,15 @@ legend { font-weight: 600; font-size: .9rem; padding: 0; margin-bottom: .2rem; }
 /* loading indicator */
 .spinner { width: 1rem; height: 1rem; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; display: inline-block; }
 .htmx-indicator { opacity: 0; transition: opacity 150ms; }
-.htmx-request .htmx-indicator, .htmx-request.htmx-indicator { opacity: 1; animation: spin .8s linear infinite; }
+.htmx-request .htmx-indicator, .htmx-request.htmx-indicator { opacity: 1; }
+.htmx-request .spinner, .htmx-request.spinner { animation: spin .8s linear infinite; }
+.request-progress { display: none; align-items: center; gap: .5rem; color: var(--muted); font-size: .875rem; }
+.htmx-request .request-progress, .htmx-request.request-progress { display: inline-flex; }
+.request-progress .spinner { flex-shrink: 0; }
+.search:has(.request-progress) { flex-wrap: wrap; }
+.search .request-progress { flex-basis: 100%; }
 @keyframes spin { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { .htmx-request .htmx-indicator, .htmx-request.htmx-indicator { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .htmx-request .spinner, .htmx-request.spinner { animation: none; } }
 
 /* search */
 .search { display: flex; gap: .5rem; align-items: center; margin-bottom: 1rem; }

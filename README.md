@@ -15,14 +15,24 @@ On the server:
 
 ```bash
 unzip -o pahe-arr.zip && cd pahe-arr
-echo "PAHE_PASSWORD=choose-a-password" > .env
+cp .env.server.example .env
+# Edit .env and set PAHE_PASSWORD before starting.
 sudo docker compose up -d --build
 ```
 
 Open `http://<server-ip>:8585`, log in, go to **Settings**, press **Test** on each section, then **Save**.
 
-Settings and the queue live in `/DATA/AppData/pahe-arr/config`. Check that the two volume paths in
-`docker-compose.yml` match your server before the first start.
+By default, settings and the queue live in `./data/config`, and downloads in
+`./data/downloads`, relative to the repository. Set `PAHE_HOST_CONFIG_DIR` and
+`PAHE_HOST_DOWNLOAD_DIR` in `.env` to use your own server paths. Set `PUID`/`PGID`
+to the user and group that should own these files (defaults: `1000:1000`).
+Inside the container, the download folder is `/config/downloads`.
+
+Run FlareSolverr separately and enter its reachable URL and the current animepahe
+domain in web Settings. No server address or media-library location is assumed.
+If using Sonarr, configure its URL, API key, and the download path as Sonarr sees it.
+Existing saved settings take precedence over first-run environment values; update
+the output folder in Settings when migrating an existing installation.
 
 ### Updating
 
@@ -36,17 +46,67 @@ sudo docker image prune -f
 
 ## Local development
 
-With Go 1.22 or newer and Make installed, run `make run` from the repository root and open
-`http://localhost:8585`. Local settings and queue data default to `/tmp/pahe`.
-Set `PAHE_CONFIG_DIR` to store them elsewhere.
+With Go 1.22 or newer, copy `.env.example` to `.env`, then run from the repository root
+on Windows, macOS, or Linux:
 
-```bash
-PAHE_CONFIG_DIR=/path/to/config make run
+```sh
+go run ./cmd/pahe serve
 ```
+
+The app reads `.env` automatically and starts at `http://127.0.0.1:8585`.
+Settings and queue data go in `tmp/config`, and downloads go in `tmp/downloads`
+inside this project. Both `tmp/` and `.env` are ignored by Git. Change the
+download folder in the web UI after the first run; saved settings take precedence.
+Existing environment variables override `.env` values. The file supports comments
+and quoted values. Without `.env`, the app keeps its production defaults.
+For Docker deployment, add `PAHE_PASSWORD` to `.env` as described above.
+
+If Make is installed, `make run` runs the same command.
 
 - `make` or `make check` runs `go vet ./...` followed by `go test ./...`.
 - `make test` runs the full test suite.
 - To run a single test, use `go test ./internal/hls -run TestName`.
+
+### Local Docker stack
+
+With Docker running Linux containers, start the app and FlareSolverr on Windows,
+macOS, or Linux:
+
+```sh
+docker compose -f docker-compose.local.yml up -d --build
+```
+
+Open `http://localhost:8585`. In **Settings**, enter the current animepahe domain,
+use the **Test** buttons, then **Save**. FlareSolverr is preconfigured as
+`http://flaresolverr:8191`; the app waits for it to be healthy before starting.
+Sonarr is optional; turn off **Send to Sonarr** when testing downloads alone.
+The local UI has no login unless `PAHE_PASSWORD` is set in `.env`.
+
+Config and queue data live in `tmp/config`, and completed videos go in
+`tmp/downloads` (shown as `/config/downloads` inside the container).
+These host folders match `.env.example`. When switching between Docker and native runs, update the saved output folder and FlareSolverr URL in Settings to match that environment.
+Both published ports are bound to localhost. Container paths and the internal
+FlareSolverr URL override the native paths and URL from `.env`.
+
+To run the app with Go while keeping only FlareSolverr in Docker:
+
+```sh
+docker compose -f docker-compose.local.yml up -d flaresolverr
+go run ./cmd/pahe serve
+```
+
+Use `http://127.0.0.1:8191` for FlareSolverr in native app Settings (also seeded by
+`.env.example`). Saved settings take precedence over first-run defaults.
+Stop any app using port 8585 before switching between native and Docker runs.
+
+Inspect or stop the local stack:
+
+```sh
+docker compose -f docker-compose.local.yml logs -f
+docker compose -f docker-compose.local.yml down
+```
+
+Stopping the stack preserves the files under `tmp`.
 
 ## Using it
 
