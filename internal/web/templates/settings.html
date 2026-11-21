@@ -11,9 +11,9 @@
       <label for="paheDomain">animepahe URL</label>
       <div class="row">
         <input id="paheDomain" name="paheDomain" value="{{.S.PaheDomain}}" placeholder="animepahe.pw" autocomplete="off">
-        <button type="button" class="btn" hx-post="/settings/test/pahe" hx-include="#settings-form" hx-target="#t-pahe" hx-indicator="#i-pahe">Test</button>
-        <span id="i-pahe" class="htmx-indicator spinner" aria-hidden="true"></span>
+        <button type="button" class="btn" hx-post="/settings/test/pahe" hx-include="#settings-form" hx-target="#t-pahe" hx-disabled-elt="this" hx-indicator="#i-pahe">Test</button>
       </div>
+       <span id="i-pahe" class="htmx-indicator request-progress" role="status"><span class="spinner" aria-hidden="true"></span><span>Checking Cloudflare access and animepahe search…</span></span>
       <p class="hint">The domain your browser opens for animepahe. It moves from time to time; the test tells you if this one is live. Takes up to a minute.</p>
       <div id="t-pahe" aria-live="polite"></div>
     </div>
@@ -21,9 +21,9 @@
       <label for="flareSolverrUrl">FlareSolverr URL</label>
       <div class="row">
         <input id="flareSolverrUrl" name="flareSolverrUrl" value="{{.S.FlareSolverrURL}}" placeholder="http://192.168.100.11:8191" autocomplete="off">
-        <button type="button" class="btn" hx-post="/settings/test/flaresolverr" hx-include="#settings-form" hx-target="#t-fs" hx-indicator="#i-fs">Test</button>
-        <span id="i-fs" class="htmx-indicator spinner" aria-hidden="true"></span>
+        <button type="button" class="btn" hx-post="/settings/test/flaresolverr" hx-include="#settings-form" hx-target="#t-fs" hx-disabled-elt="this" hx-indicator="#i-fs">Test</button>
       </div>
+       <span id="i-fs" class="htmx-indicator request-progress" role="status"><span class="spinner" aria-hidden="true"></span><span>Connecting to FlareSolverr and loading the test page…</span></span>
       <p class="hint">Passes animepahe's Cloudflare check. Byparr works here too.</p>
       <div id="t-fs" aria-live="polite"></div>
     </div>
@@ -35,9 +35,9 @@
       <label for="outputDir">Output folder</label>
       <div class="row">
         <input id="outputDir" name="outputDir" value="{{.S.OutputDir}}" placeholder="/DATA/.manual-import" autocomplete="off">
-        <button type="button" class="btn" hx-post="/settings/test/output" hx-include="#settings-form" hx-target="#t-out" hx-indicator="#i-out">Test</button>
-        <span id="i-out" class="htmx-indicator spinner" aria-hidden="true"></span>
+        <button type="button" class="btn" hx-post="/settings/test/output" hx-include="#settings-form" hx-target="#t-out" hx-disabled-elt="this" hx-indicator="#i-out">Test</button>
       </div>
+       <span id="i-out" class="htmx-indicator request-progress" role="status"><span class="spinner" aria-hidden="true"></span><span>Checking folder permissions and free space…</span></span>
       <p class="hint">Path inside this container. Keep it on the same disk as your library so Sonarr's move is instant.</p>
       <div id="t-out" aria-live="polite"></div>
     </div>
@@ -60,9 +60,9 @@
       <p class="hint">Only needed if Sonarr mounts the disk at a different path than this container.</p>
     </div>
     <div class="row">
-      <button type="button" class="btn" hx-post="/settings/test/sonarr" hx-include="#settings-form" hx-target="#t-sonarr" hx-indicator="#i-sonarr">Test Sonarr</button>
-      <span id="i-sonarr" class="htmx-indicator spinner" aria-hidden="true"></span>
+      <button type="button" class="btn" hx-post="/settings/test/sonarr" hx-include="#settings-form" hx-target="#t-sonarr" hx-disabled-elt="this" hx-indicator="#i-sonarr">Test Sonarr</button>
     </div>
+     <span id="i-sonarr" class="htmx-indicator request-progress" role="status"><span class="spinner" aria-hidden="true"></span><span>Checking Sonarr connection and loading its library…</span></span>
     <div id="t-sonarr" aria-live="polite"></div>
   </section>
 

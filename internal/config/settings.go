@@ -46,6 +46,13 @@ func Defaults() Settings {
 	if v, err := strconv.Atoi(os.Getenv("PAHE_DELAY_SECONDS")); err == nil {
 		s.DelaySeconds = v
 	}
+	// Local .env files can use portable relative paths. Store an absolute path
+	// so the web settings form and Sonarr receive an unambiguous location.
+	if output := strings.TrimSpace(os.Getenv("PAHE_OUTPUT_DIR")); output != "" {
+		if absolute, err := filepath.Abs(output); err == nil {
+			s.OutputDir = absolute
+		}
+	}
 	return s.Normalize()
 }
 

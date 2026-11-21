@@ -1,10 +1,10 @@
 {{define "content"}}
 <h1>Find an anime</h1>
-<form class="search" action="/search" method="get" hx-get="/search" hx-target="#results" hx-push-url="true" hx-indicator="#search-ind" role="search">
+<form class="search" action="/search" method="get" hx-get="/search" hx-target="#results" hx-push-url="true" hx-disabled-elt="find button" hx-indicator="#search-ind" role="search">
   <label for="q" class="sr-only">Anime title</label>
   <input id="q" name="q" type="search" placeholder="Title, e.g. Death Note" value="{{.Data.Q}}" autofocus autocomplete="off">
   <button class="btn primary" type="submit">Search</button>
-  <span id="search-ind" class="htmx-indicator spinner" aria-hidden="true"></span>
+  <span id="search-ind" class="htmx-indicator request-progress" role="status"><span class="spinner" aria-hidden="true"></span><span>Searching animepahe; Cloudflare checks may take a minute…</span></span>
 </form>
 <div id="results" aria-live="polite">{{template "results" .Data}}</div>
 {{end}}
