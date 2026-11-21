@@ -11,7 +11,7 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -ldflags="-s -w -X pahe-arr/internal/buildinfo.Version=$VERSION -X pahe-arr/internal/buildinfo.Commit=$REVISION" -o /out/pahe ./cmd/pahe
 
 # ---- runtime: alpine + ffmpeg ----
-FROM alpine:3.20
+FROM alpine:3.24
 ARG VERSION=dev
 ARG REVISION=unknown
 LABEL org.opencontainers.image.source="https://github.com/barestu/pahe-arr" \
