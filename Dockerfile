@@ -1,5 +1,5 @@
 # ---- build: static Go binary ----
-FROM --platform=$BUILDPLATFORM golang:1.22-alpine AS build
+FROM --platform=$BUILDPLATFORM golang:1.27-alpine AS build
 ARG TARGETOS=linux
 ARG TARGETARCH
 ARG VERSION=dev
