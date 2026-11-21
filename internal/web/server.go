@@ -22,6 +22,7 @@ import (
 	"strings"
 	"time"
 
+	"pahe-arr/internal/buildinfo"
 	"pahe-arr/internal/cf"
 	"pahe-arr/internal/config"
 	"pahe-arr/internal/grab"
@@ -63,6 +64,7 @@ func LoadSecret(dir string) ([]byte, error) {
 }
 
 var funcs = template.FuncMap{
+	"version": func() string { return buildinfo.Version },
 	"statusClass": func(s jobs.Status) string {
 		switch {
 		case s == jobs.Done:

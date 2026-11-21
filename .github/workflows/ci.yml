@@ -1,0 +1,42 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  checks:
+    name: checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
+        with:
+          go-version-file: go.mod
+      - name: Format, vet, and test
+        run: |
+          test -z "$(gofmt -l cmd internal)"
+          make check
+          go test -race ./...
+          node --check internal/web/static/app.js
+          go mod verify
+      - name: Validate deployment files
+        env:
+          PAHE_PASSWORD: ci-validation-only
+        run: |
+          docker compose config --quiet
+          docker compose -f docker-compose.local.yml config --quiet
+          docker compose -f deploy/casaos.yml config --quiet
+      - name: Build and smoke-test container
+        run: |
+          docker build --build-arg VERSION=ci --build-arg REVISION="$GITHUB_SHA" -t pahe-arr:ci .
+          docker run --rm pahe-arr:ci version | grep -F "pahe-arr ci ($GITHUB_SHA)"
+          docker run -d --name pahe-ci -e PAHE_PASSWORD=ci-test pahe-arr:ci
+          trap 'docker logs pahe-ci; docker rm -f pahe-ci' EXIT
+          for attempt in $(seq 1 30); do
+            if docker exec pahe-ci wget -qO- http://127.0.0.1:8585/healthz; then exit 0; fi
+            sleep 2
+          done
+          exit 1

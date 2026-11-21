@@ -11,6 +11,27 @@ and tells Jellyfin.
 
 ## Install
 
+### CasaOS dashboard (published releases)
+
+After the first release is published, download `casaos.yml` from
+[GitHub Releases](https://github.com/barestu/pahe-arr/releases). In CasaOS, open
+**App Store → Custom Install → Import**, then paste or upload that file.
+Set `PAHE_PASSWORD` and choose your host config and download folders before
+installing. The suggested `/DATA/AppData/pahe-arr/...` folders are editable CasaOS
+defaults, not required locations. FlareSolverr is included on the private Compose
+network. Open port 8585, then set and test the animepahe domain in Settings.
+
+Use the release attachment to install an exact image version. The repository's
+`deploy/casaos.yml` tracks `latest` and is a template for future releases; it will
+not install until a public image exists. If your DNS redirects animepahe to a block
+page, configure working DNS for both services. Configure Sonarr separately if used.
+
+For upgrades, back up config and change the image version in CasaOS. The pipeline
+publishes images but never automatically updates your server.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for Git rules and the release procedure.
+
+### Build from source
+
 On the server:
 
 ```bash

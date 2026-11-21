@@ -21,6 +21,7 @@ import (
 
 	"github.com/joho/godotenv"
 
+	"pahe-arr/internal/buildinfo"
 	"pahe-arr/internal/cf"
 	appconfig "pahe-arr/internal/config"
 	"pahe-arr/internal/grab"
@@ -35,6 +36,7 @@ import (
 const usageText = `pahe — animepahe downloader (spike)
 
 Usage:
+  pahe version                        Show version and commit
   pahe serve                          Run the web UI (default in the container)
   pahe doctor [--query naruto]        Test every step without downloading
   pahe search <title>                 Find an anime and its session id
@@ -57,6 +59,10 @@ Environment:
 `
 
 func main() {
+	if len(os.Args) == 2 && (os.Args[1] == "version" || os.Args[1] == "--version") {
+		fmt.Printf("pahe-arr %s (%s)\n", buildinfo.Version, buildinfo.Commit)
+		return
+	}
 	if err := loadEnvFile(".env"); err != nil {
 		fmt.Fprintln(os.Stderr, "error loading .env:", err)
 		os.Exit(1)
