@@ -28,7 +28,8 @@ jobs:
         run: |
           docker compose config --quiet
           docker compose -f docker-compose.local.yml config --quiet
-          docker compose -f deploy/casaos.yml config --quiet
+          docker compose -f deploy/compose.release.yml config --quiet
+          docker compose -f deploy/compose.release.yml -f deploy/compose.flaresolverr.yml config --quiet
       - name: Build and smoke-test container
         run: |
           docker build --build-arg VERSION=ci --build-arg REVISION="$GITHUB_SHA" -t pahe-arr:ci .

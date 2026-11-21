@@ -72,7 +72,7 @@ jobs:
             REVISION=${{ github.sha }}
           provenance: true
           sbom: true
-      - name: Create release and CasaOS installer
+      - name: Create release and portable Compose installer
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ github.ref_name }}
@@ -80,12 +80,13 @@ jobs:
           IMAGE: ${{ needs.validate.outputs.image }}
           PRERELEASE: ${{ needs.validate.outputs.prerelease }}
         run: |
-          sed "s|ghcr.io/barestu/pahe-arr:latest|$IMAGE:$VERSION|" deploy/casaos.yml > casaos.yml
-          sha256sum casaos.yml > SHA256SUMS
+          sed "s|ghcr.io/barestu/pahe-arr:latest|$IMAGE:$VERSION|" deploy/compose.release.yml > compose.release.yml
+          cp deploy/compose.flaresolverr.yml compose.flaresolverr.yml
+          sha256sum compose.release.yml compose.flaresolverr.yml > SHA256SUMS
           if ! gh release view "$TAG" >/dev/null 2>&1; then
             EXTRA=()
             if [[ "$PRERELEASE" == true ]]; then EXTRA+=(--prerelease); fi
-            gh release create "$TAG" --verify-tag --title "$TAG" --generate-notes "${EXTRA[@]}" casaos.yml SHA256SUMS
+            gh release create "$TAG" --verify-tag --title "$TAG" --generate-notes "${EXTRA[@]}" compose.release.yml compose.flaresolverr.yml SHA256SUMS
           else
-            gh release upload "$TAG" casaos.yml SHA256SUMS --clobber
+            gh release upload "$TAG" compose.release.yml compose.flaresolverr.yml SHA256SUMS --clobber
           fi

@@ -4,20 +4,17 @@ services:
     image: ghcr.io/barestu/pahe-arr:latest
     restart: unless-stopped
     environment:
-      PAHE_PASSWORD: ""
+      PAHE_PASSWORD: ${PAHE_PASSWORD:?Set PAHE_PASSWORD before starting}
       PAHE_OUTPUT_DIR: /config/downloads
-      FLARESOLVERR_URL: http://flaresolverr:8191
-      PUID: "1000"
-      PGID: "1000"
-      TZ: UTC
+      FLARESOLVERR_URL: ${FLARESOLVERR_URL:-}
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
+      TZ: ${TZ:-UTC}
     ports:
       - "8585:8585"
     volumes:
-      - /DATA/AppData/pahe-arr/config:/config
-      - /DATA/AppData/pahe-arr/downloads:/config/downloads
-    depends_on:
-      flaresolverr:
-        condition: service_healthy
+      - "${PAHE_HOST_CONFIG_DIR:-./data/config}:/config"
+      - "${PAHE_HOST_DOWNLOAD_DIR:-./data/downloads}:/config/downloads"
     x-casaos:
       envs:
         - container: PAHE_PASSWORD
@@ -30,17 +27,6 @@ services:
         - container: /config/downloads
           description:
             en_US: Completed videos. Choose your download disk/folder.
-  flaresolverr:
-    image: ghcr.io/flaresolverr/flaresolverr:latest@sha256:c80ae007ce2ccdcd217a12426e4f039ef763ff90738c808d38810c3e59323767
-    restart: unless-stopped
-    environment:
-      LOG_LEVEL: info
-    healthcheck:
-      test: [CMD, curl, --fail, --silent, --max-time, "5", "http://127.0.0.1:8191/"]
-      interval: 10s
-      timeout: 6s
-      retries: 12
-      start_period: 30s
 x-casaos:
   architectures: [amd64, arm64]
   main: pahe-arr

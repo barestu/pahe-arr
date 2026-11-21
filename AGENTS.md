@@ -10,6 +10,7 @@ Go web app + CLI (`cmd/pahe`) that downloads animepahe episodes and hands them t
 - `doctor`, `search`, and `download` need a live animepahe domain and FlareSolverr. `download` also needs `ffmpeg` on PATH.
 - Build and deploy on the server with `docker compose up -d --build`. Copy `.env.server.example` to `.env` and set `PAHE_PASSWORD`; host folders are configurable and default to `./data/config` and `./data/downloads`.
 - Follow `CONTRIBUTING.md`: short-lived branches, PRs, green CI, squash merge. Publish only from validated version tags on main. Never create or move a release tag without an explicit release request.
+- Use `feat/`, `fix/`, `chore/`, or `docs/` branch prefixes; do not create `codex/` branches.
 
 ## Constraints
 

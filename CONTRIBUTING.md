@@ -1,6 +1,7 @@
 # Development and Git workflow
 
-Create short-lived branches from current `main` (`codex/`, `feat/`, or `fix/`).
+Create short-lived branches from current `main` (`feat/`, `fix/`, `chore/`, or `docs/`).
+Do not use the `codex/` prefix for new branches.
 Submit a PR; do not push application changes directly to `main`. Require the
 `checks` CI status, resolve review conversations, then squash merge and delete
 the feature branch. Use descriptive conventional PR titles (`feat:`, `fix:`,
@@ -48,8 +49,9 @@ footer shows the version. Keep user-visible changes in `CHANGELOG.md`.
    `:latest`. Candidates produce only `:X.Y.Z-rc.N`. Releasing an older patch
    must not roll back `latest`. Do not rerun a successful image publication to
    rebuild an existing version: base images may have changed; publish a new tag.
-5. A GitHub Release includes generated notes, `casaos.yml` pinned to that version,
-   and its checksum. Image builds include provenance and an SBOM.
+5. A GitHub Release includes generated notes, `compose.release.yml` pinned to that
+   version, the optional `compose.flaresolverr.yml` overlay, and their checksums.
+   Image builds include provenance and an SBOM.
 6. On the first publication, open the GHCR package settings and make the package
    public, then confirm an unauthenticated pull works. A public repository does
    not automatically guarantee a publicly pullable package.
