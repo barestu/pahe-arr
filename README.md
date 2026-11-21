@@ -15,14 +15,24 @@ On the server:
 
 ```bash
 unzip -o pahe-arr.zip && cd pahe-arr
-echo "PAHE_PASSWORD=choose-a-password" > .env
+cp .env.server.example .env
+# Edit .env and set PAHE_PASSWORD before starting.
 sudo docker compose up -d --build
 ```
 
 Open `http://<server-ip>:8585`, log in, go to **Settings**, press **Test** on each section, then **Save**.
 
-Settings and the queue live in `/DATA/AppData/pahe-arr/config`. Check that the two volume paths in
-`docker-compose.yml` match your server before the first start.
+By default, settings and the queue live in `./data/config`, and downloads in
+`./data/downloads`, relative to the repository. Set `PAHE_HOST_CONFIG_DIR` and
+`PAHE_HOST_DOWNLOAD_DIR` in `.env` to use your own server paths. Set `PUID`/`PGID`
+to the user and group that should own these files (defaults: `1000:1000`).
+Inside the container, the download folder is `/config/downloads`.
+
+Run FlareSolverr separately and enter its reachable URL and the current animepahe
+domain in web Settings. No server address or media-library location is assumed.
+If using Sonarr, configure its URL, API key, and the download path as Sonarr sees it.
+Existing saved settings take precedence over first-run environment values; update
+the output folder in Settings when migrating an existing installation.
 
 ### Updating
 

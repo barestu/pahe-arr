@@ -8,16 +8,17 @@ services:
     image: pahe-arr:local
     container_name: pahe-arr
     environment:
-      - PUID=1000
-      - PGID=1000
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
       - UMASK=002
-      - TZ=Asia/Jakarta
+      - TZ=${TZ:-UTC}
       - PAHE_PASSWORD=${PAHE_PASSWORD:?Create a .env file with PAHE_PASSWORD=yourpassword}
-      - PAHE_DOMAIN=animepahe.pw                    # first-run default; edit later in Settings
-      - FLARESOLVERR_URL=http://192.168.100.11:8191 # first-run default; edit later in Settings
+      - PAHE_DOMAIN=${PAHE_DOMAIN:-}
+      - FLARESOLVERR_URL=${FLARESOLVERR_URL:-}
+      - PAHE_OUTPUT_DIR=/config/downloads
     volumes:
-      - /DATA/AppData/pahe-arr/config:/config
-      - "/mnt/Dragonsreach/[MOVIES]:/DATA"
+      - "${PAHE_HOST_CONFIG_DIR:-./data/config}:/config"
+      - "${PAHE_HOST_DOWNLOAD_DIR:-./data/downloads}:/config/downloads"
     ports:
       - "8585:8585"
     restart: unless-stopped
