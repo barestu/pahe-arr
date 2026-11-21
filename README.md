@@ -15,18 +15,18 @@ and tells Jellyfin.
 
 After the first release is published, download `compose.release.yml` from
 [GitHub Releases](https://github.com/barestu/pahe-arr/releases). Place it in a
-folder on your server and create a `.env` alongside it with `PAHE_PASSWORD` set
-to your own password. Start it with:
+folder on your server and edit its `environment` values, setting `PAHE_PASSWORD`
+to your own password (empty disables login). Start it with:
 
 ```sh
 docker compose -f compose.release.yml up -d
 ```
 
 Config and downloads default to `./data/config` and `./data/downloads` relative
-to the Compose file. Override `PAHE_HOST_CONFIG_DIR`, `PAHE_HOST_DOWNLOAD_DIR`,
-`PUID`, `PGID`, and `TZ` in `.env` as needed. This file runs only pahe-arr.
+to the Compose file. Edit the volume `source` fields and the literal `PUID`,
+`PGID`, and `TZ` values as needed. This file runs only pahe-arr.
 Set `FLARESOLVERR_URL` to your existing service's container-reachable address in
-`.env`, or enter it in web Settings. Open port 8585, then set and test the
+the Compose file, or enter it in web Settings. Open port 8585, then set and test the
 animepahe domain and FlareSolverr URL in Settings.
 
 If you need FlareSolverr, also download `compose.flaresolverr.yml` into the same
@@ -42,9 +42,10 @@ arguments for later updates and `down`. Existing saved settings take precedence;
 update the URL in Settings when switching between external and bundled services.
 
 For CasaOS, use **App Store → Custom Install → Import** with the same file.
-Before importing, replace the `${...}` expressions with your actual values
-(including a password and absolute host folder paths) if the importer cannot
-resolve `.env`. The optional `x-casaos` metadata adds dashboard labels; Docker
+The release file uses literal defaults, so no `.env` substitution is needed.
+Set your password and select absolute host folders in the install form. Keep
+the container volume targets `/config` and `/config/downloads` unchanged.
+The optional `x-casaos` metadata adds dashboard labels; Docker
 Compose ignores it. No CasaOS installation is required to run this stack.
 To import the optional bundle, first combine the files using
 `docker compose -f compose.release.yml -f compose.flaresolverr.yml config`, then

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.1.1
+
+- Use literal environment defaults and explicit volume fields in the release
+  Compose file so graphical importers do not misparse variable expressions.
+
 ## 0.1.0
 
 - Portable `.env` configuration and a local Docker stack with FlareSolverr.
