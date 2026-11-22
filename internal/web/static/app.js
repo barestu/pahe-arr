@@ -9,7 +9,8 @@
     const button = document.querySelector('[data-theme-toggle]');
     if (button) {
       button.hidden = false;
-      button.textContent = dark ? 'Light mode' : 'Dark mode';
+      const label = button.querySelector('[data-theme-label]');
+      if (label) label.textContent = dark ? 'Light mode' : 'Dark mode';
       button.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
     }
   }
@@ -22,21 +23,6 @@
   });
   const one = (s, r = document) => r.querySelector(s);
   const all = (s, r = document) => Array.from(r.querySelectorAll(s));
-
-  function parseRanges(text) {
-    const out = [];
-    for (const part of text.split(',')) {
-      const p = part.trim();
-      if (!p) continue;
-      const m = p.match(/^(\d+(?:\.\d+)?)\s*(?:-\s*(\d+(?:\.\d+)?))?$/);
-      if (!m) return null;
-      const lo = parseFloat(m[1]);
-      const hi = m[2] !== undefined ? parseFloat(m[2]) : lo;
-      if (hi < lo) return null;
-      out.push([lo, hi]);
-    }
-    return out.length ? out : null;
-  }
 
   function initEpisodes() {
     const boxes = all('input[data-ep]');
@@ -57,27 +43,6 @@
       boxes.forEach(b => { b.checked = on; });
       update();
     }));
-    const input = one('[data-range-input]');
-    const apply = () => {
-      const r = parseRanges(input.value);
-      if (!r) {
-        input.setCustomValidity('Use episode numbers and ranges, e.g. 1-12, 15');
-        input.reportValidity();
-        return;
-      }
-      input.setCustomValidity('');
-      boxes.forEach(b => {
-        const n = parseFloat(b.dataset.ep);
-        b.checked = r.some(([lo, hi]) => n >= lo && n <= hi);
-      });
-      update();
-    };
-    const btn = one('[data-range-apply]');
-    if (btn && input) {
-      btn.addEventListener('click', apply);
-      input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); apply(); } });
-      input.addEventListener('input', () => input.setCustomValidity(''));
-    }
     update();
   }
 

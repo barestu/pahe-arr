@@ -1,7 +1,7 @@
 {{define "content"}}
 {{with .Data}}
 <p class="crumbs"><a href="/">Search</a> <span aria-hidden="true">/</span> {{.Title}}</p>
-<h1>{{.Title}}</h1>
+<h1>{{.Title}}{{if .SiteURL}} <a class="btn ghost icon-btn" href="{{.SiteURL}}/anime/{{.Session}}" target="_blank" rel="noopener noreferrer" aria-label="Open on animepahe" title="Open on animepahe">{{template "icon-external"}}</a>{{end}}</h1>
 {{if .Error}}<div class="alert bad">{{.Error}}</div>{{else}}
 <form id="queue-form" hx-post="/queue" hx-indicator="#queue-ind">
   <input type="hidden" name="session" value="{{.Session}}">
@@ -11,9 +11,6 @@
       <div class="card-head">
         <h2>Episodes <span class="muted">{{len .Episodes}}</span></h2>
         <div class="range">
-          <label for="range" class="sr-only">Episodes to select</label>
-          <input id="range" type="text" placeholder="1-12, 15" data-range-input>
-          <button type="button" class="btn small" data-range-apply>Select</button>
           <button type="button" class="btn small ghost" data-select="all">All</button>
           <button type="button" class="btn small ghost" data-select="none">None</button>
         </div>

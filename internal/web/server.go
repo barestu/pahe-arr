@@ -271,6 +271,15 @@ type searchData struct {
 	Results  []pahe.Anime
 	Error    string
 	Searched bool
+	SiteURL  string // animepahe origin, for "open on animepahe" links
+}
+
+// siteURL is the animepahe origin, or "" when no domain is configured.
+func siteURL(set config.Settings) string {
+	if set.PaheDomain == "" {
+		return ""
+	}
+	return "https://" + set.PaheDomain
 }
 
 func (s *Server) searchPage(w http.ResponseWriter, r *http.Request) {
@@ -279,9 +288,9 @@ func (s *Server) searchPage(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) search(w http.ResponseWriter, r *http.Request) {
 	q := strings.TrimSpace(r.URL.Query().Get("q"))
-	d := searchData{Q: q, Searched: q != ""}
+	set := s.Settings.Get()
+	d := searchData{Q: q, Searched: q != "", SiteURL: siteURL(set)}
 	if q != "" {
-		set := s.Settings.Get()
 		if set.PaheDomain == "" || set.FlareSolverrURL == "" {
 			d.Error = "Set the animepahe URL and FlareSolverr URL in Settings first."
 		} else {
@@ -312,6 +321,7 @@ type animeData struct {
 	Title    string
 	Episodes []epRow
 	Error    string
+	SiteURL  string
 
 	Quality    int
 	Audio      string
@@ -329,7 +339,7 @@ func (s *Server) animePage(w http.ResponseWriter, r *http.Request) {
 	session := r.PathValue("session")
 	set := s.Settings.Get()
 	d := animeData{
-		Session: session, Title: strings.TrimSpace(r.URL.Query().Get("t")),
+		Session: session, Title: strings.TrimSpace(r.URL.Query().Get("t")), SiteURL: siteURL(set),
 		Quality: set.DefaultQuality, Audio: set.DefaultAudio,
 		Qualities: []int{9999, 1080, 720, 480, 360},
 		SonarrOn:  set.SonarrConfigured(), AutoImport: set.DefaultAutoImport, DefaultAbs: true,

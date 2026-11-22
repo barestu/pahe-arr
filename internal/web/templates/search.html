@@ -1,9 +1,8 @@
 {{define "content"}}
 <h1>Find an anime</h1>
-<form class="search" action="/search" method="get" hx-get="/search" hx-target="#results" hx-push-url="true" hx-disabled-elt="find button" hx-indicator="#search-ind" role="search">
+<form class="search" action="/search" method="get" hx-get="/search" hx-target="#results" hx-replace-url="true" hx-trigger="input changed delay:500ms from:#q, submit" hx-sync="this:replace" hx-indicator="#search-ind" role="search">
   <label for="q" class="sr-only">Anime title</label>
   <input id="q" name="q" type="search" placeholder="Title, e.g. Death Note" value="{{.Data.Q}}" autofocus autocomplete="off">
-  <button class="btn primary" type="submit">Search</button>
   <span id="search-ind" class="htmx-indicator request-progress" role="status"><span class="spinner" aria-hidden="true"></span><span>Searching animepahe; Cloudflare checks may take a minute…</span></span>
 </form>
 <div id="results" aria-live="polite">{{template "results" .Data}}</div>
@@ -14,10 +13,13 @@
 {{else if .Results}}
 <ul class="results">
   {{range .Results}}
-  <li><a href="/anime/{{.Session}}?t={{.Title}}">
-    <span class="r-title">{{.Title}}</span>
-    <span class="r-meta">{{.Type}}{{if .Episodes}} · {{.Episodes}} eps{{end}}{{if .Year}} · {{.Year}}{{end}}{{if .Status}} · {{.Status}}{{end}}</span>
-  </a></li>
+  <li>
+    <a class="r-main" href="/anime/{{.Session}}?t={{.Title}}">
+      <span class="r-title">{{.Title}}</span>
+      <span class="r-meta">{{.Type}}{{if .Episodes}} · {{.Episodes}} eps{{end}}{{if .Year}} · {{.Year}}{{end}}{{if .Status}} · {{.Status}}{{end}}</span>
+    </a>
+    {{if $.SiteURL}}<a class="btn ghost icon-btn" href="{{$.SiteURL}}/anime/{{.Session}}" target="_blank" rel="noopener noreferrer" aria-label="Open {{.Title}} on animepahe" title="Open on animepahe">{{template "icon-external"}}</a>{{end}}
+  </li>
   {{end}}
 </ul>
 {{else if .Searched}}<p class="muted">No results for “{{.Q}}”.</p>
