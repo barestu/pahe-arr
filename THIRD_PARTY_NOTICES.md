@@ -29,9 +29,10 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-The animepahe endpoints and play-page parsing in `internal/pahe`, and the HLS segment download and
-decryption logic in `internal/hls`, are ported from
-[barestu/animepahe-browser-dl](https://github.com/barestu/animepahe-browser-dl), used under the MIT License:
+## Ported animepahe and HLS code
+
+The ported animepahe endpoints and play-page parsing in `internal/pahe` and the HLS segment download
+and decryption logic in `internal/hls` are used under the MIT License.
 
 ```
 MIT License

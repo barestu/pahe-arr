@@ -1,4 +1,58 @@
-# Development and Git workflow
+# Contributing
+
+## Local development
+
+Install Go 1.22 or newer. Copy `.env.example` to `.env`, then run from the project root:
+
+```sh
+go run ./cmd/pahe serve
+```
+
+`make run` runs the same command. Open `http://127.0.0.1:8585`. The example
+stores settings and queue data in `tmp/config` and downloads in `tmp/downloads`.
+For live searches, set the animepahe domain and FlareSolverr URL in **Settings**.
+Install `ffmpeg` on your PATH to try downloads with the native app.
+
+To run the app and FlareSolverr together in Docker:
+
+```sh
+docker compose -f docker-compose.local.yml up -d --build
+```
+
+Open `http://localhost:8585` and test the connection settings. The app uses
+`http://flaresolverr:8191` and `/config/downloads` inside Docker. If you switch
+between native and Docker runs, update saved paths and URLs in **Settings**.
+To run only FlareSolverr in Docker, append `flaresolverr` to the Compose command
+and use `http://127.0.0.1:8191` in the native app.
+
+## Checks and diagnostics
+
+`make check` runs `go vet ./...` and `go test ./...`. Use `make test` to run
+just the tests or `go test ./internal/hls -run TestName` to run a single test.
+
+`go run ./cmd/pahe help` lists CLI commands. `go run ./cmd/pahe doctor` checks
+the connection through to the stream using the same config as the local web app.
+For a source-based server deployment, use
+`docker compose exec -u 1000:1000 pahe-arr pahe doctor`. Substitute your UID and
+GID if you changed the Compose defaults.
+
+## Project layout
+
+| Path | Role |
+|---|---|
+| `cmd/pahe` | Web server and CLI entry point |
+| `internal/web`, `internal/jobs` | Web UI and persistent job queue |
+| `internal/config` | Settings and atomic JSON writes |
+| `internal/pahe`, `internal/session`, `internal/cf` | animepahe requests and FlareSolverr sessions |
+| `internal/grab`, `internal/kwik`, `internal/hls`, `internal/dl` | Episode downloads and ffmpeg remuxing |
+| `internal/sonarr` | Episode mapping and Manual Import |
+
+Web templates and static assets are embedded. Rebuild the app after editing them.
+Keep JavaScript and CSS in `internal/web/static/app.js` and
+`internal/web/static/app.css` to comply with the content security policy.
+Record dependency licenses in [Third-party notices](THIRD_PARTY_NOTICES.md).
+
+## Git workflow
 
 Create short-lived branches from current `main` (`feat/`, `fix/`, `chore/`, or `docs/`).
 Do not use the `codex/` prefix for new branches.
