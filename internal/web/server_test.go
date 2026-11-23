@@ -144,7 +144,7 @@ func TestSettingsSaveKeepsAPIKey(t *testing.T) {
 		t.Fatal("blank API key should keep the saved one")
 	}
 	res, _ = c.Get(ts.URL + "/settings")
-	if b := body(t, res); strings.Contains(b, "abc") || !strings.Contains(b, "Saved. Leave blank") {
+	if b := body(t, res); strings.Contains(b, "abc") || !strings.Contains(b, `value="***"`) {
 		t.Fatal("settings page must not echo the API key")
 	}
 	form.Set("clearApiKey", "on")

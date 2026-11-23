@@ -60,6 +60,7 @@ type Job struct {
 	Quality int    `json:"quality"`
 	Audio   string `json:"audio"`
 
+	ReleaseTitle      string `json:"releaseTitle,omitempty"` // Present on Sonarr-managed downloads.
 	Import            bool   `json:"import"`
 	SonarrSeriesID    int    `json:"sonarrSeriesId,omitempty"`
 	SonarrSeriesTitle string `json:"sonarrSeriesTitle,omitempty"`
@@ -102,7 +103,11 @@ func (c *Clients) For(s config.Settings) *pahe.Client {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if cl, ok := c.m[key]; ok {
-		cl.Delay = time.Duration(s.DelaySeconds) * time.Second
+		delay := time.Duration(s.DelaySeconds) * time.Second
+		if cl.Delay != delay {
+			cl = &pahe.Client{S: cl.S, Delay: delay}
+			c.m[key] = cl
+		}
 		return cl
 	}
 	cl := &pahe.Client{
@@ -208,6 +213,28 @@ func (m *Manager) Add(js ...Job) int {
 	return added
 }
 
+// AddRelease returns the persisted download ID Sonarr tracks through queue and history.
+func (m *Manager) AddRelease(j Job) (string, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	for _, existing := range m.jobs {
+		if existing.ReleaseTitle == j.ReleaseTitle && existing.EpisodeSession == j.EpisodeSession && !existing.Status.Finished() {
+			return existing.ID, nil
+		}
+	}
+	j.ID = newID()
+	j.CreatedAt = m.now()
+	j.UpdatedAt = j.CreatedAt
+	j.Status = Queued
+	m.jobs = append(m.jobs, &j)
+	if err := m.saveLocked(); err != nil {
+		m.jobs = m.jobs[:len(m.jobs)-1]
+		return "", err
+	}
+	m.signal()
+	return j.ID, nil
+}
+
 func (m *Manager) pendingDuplicateLocked(j Job) bool {
 	for _, e := range m.jobs {
 		if !e.Status.Finished() && e.EpisodeSession == j.EpisodeSession && e.Audio == j.Audio && e.Quality == j.Quality {
@@ -297,6 +324,23 @@ func (m *Manager) Remove(id string) {
 	}
 }
 
+// RemoveRelease cancels and forgets only jobs owned by the Sonarr download client.
+func (m *Manager) RemoveRelease(id string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	for i, j := range m.jobs {
+		if j.ID != id || j.ReleaseTitle == "" {
+			continue
+		}
+		if cancel := m.cancels[id]; cancel != nil {
+			cancel()
+		}
+		m.jobs = append(m.jobs[:i], m.jobs[i+1:]...)
+		m.save()
+		return
+	}
+}
+
 // ClearFinished removes completed and canceled jobs (failed ones stay until removed or retried).
 func (m *Manager) ClearFinished() int {
 	m.mu.Lock()
@@ -304,7 +348,7 @@ func (m *Manager) ClearFinished() int {
 	kept := m.jobs[:0]
 	n := 0
 	for _, j := range m.jobs {
-		if j.Status == Done || j.Status == Canceled {
+		if j.ReleaseTitle == "" && (j.Status == Done || j.Status == Canceled) {
 			n++
 			continue
 		}
@@ -373,6 +417,11 @@ func (m *Manager) update(j *Job, f func(*Job)) {
 func (m *Manager) process(parent context.Context, j *Job) {
 	ctx, cancel := context.WithCancel(parent)
 	m.mu.Lock()
+	if m.find(j.ID) != j || j.Status == Canceled {
+		m.mu.Unlock()
+		cancel()
+		return
+	}
 	m.cancels[j.ID] = cancel
 	snap := *j
 	m.mu.Unlock()
@@ -394,6 +443,7 @@ func (m *Manager) process(parent context.Context, j *Job) {
 		Quality:     snap.Quality,
 		Audio:       snap.Audio,
 		Concurrency: s.Concurrency,
+		Exact:       snap.ReleaseTitle != "",
 	}
 	res, err := grab.Episode(ctx, client, ep, opts, func(stage grab.Stage, done, total int) {
 		m.update(j, func(j *Job) {

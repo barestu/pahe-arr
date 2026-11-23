@@ -3,6 +3,8 @@
 package config
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -14,6 +16,7 @@ import (
 )
 
 type Settings struct {
+	IntegrationKey  string `json:"integrationKey"`
 	PaheDomain      string `json:"paheDomain"`
 	FlareSolverrURL string `json:"flareSolverrUrl"`
 	OutputDir       string `json:"outputDir"`
@@ -162,6 +165,29 @@ func (st *Store) Set(s Settings) error {
 	s = s.Normalize()
 	st.mu.Lock()
 	defer st.mu.Unlock()
+	// A concurrent web settings save must preserve the current credential.
+	s.IntegrationKey = st.s.IntegrationKey
+	return st.writeLocked(s)
+}
+
+// RotateIntegrationKey persists the replacement before making it active.
+func (st *Store) RotateIntegrationKey() (string, error) {
+	var raw [32]byte
+	if _, err := rand.Read(raw[:]); err != nil {
+		return "", err
+	}
+	key := hex.EncodeToString(raw[:])
+	st.mu.Lock()
+	defer st.mu.Unlock()
+	next := st.s
+	next.IntegrationKey = key
+	if err := st.writeLocked(next); err != nil {
+		return "", err
+	}
+	return key, nil
+}
+
+func (st *Store) writeLocked(s Settings) error {
 	if err := WriteJSONAtomic(st.path, s, 0o600); err != nil {
 		return err
 	}

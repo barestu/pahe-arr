@@ -63,7 +63,49 @@
     });
   }
 
+  document.addEventListener('click', async event => {
+    const button = event.target.closest('#copy-key');
+    if (!button) return;
+    const status = one('#copy-status');
+    try {
+      const response = await fetch('/settings/integration-key/copy', { method: 'POST', redirect: 'error' });
+      if (!response.ok) throw new Error();
+      const key = await response.text();
+      try {
+        await navigator.clipboard.writeText(key);
+      } catch {
+        const temp = document.createElement('textarea');
+        temp.className = 'sr-only';
+        temp.value = key;
+        document.body.append(temp);
+        try {
+          temp.select();
+          if (!document.execCommand('copy')) throw new Error();
+        } finally {
+          temp.remove();
+          button.focus();
+        }
+      }
+      status.textContent = 'Key copied.';
+    } catch {
+      status.textContent = 'Could not copy the key. Check clipboard permissions and try again.';
+    }
+  });
+
   document.addEventListener('DOMContentLoaded', () => {
+    const savedKey = one('[data-saved-key]');
+    if (savedKey) {
+      savedKey.addEventListener('focus', () => {
+        if (!savedKey.name) savedKey.value = '';
+      });
+      savedKey.addEventListener('input', () => { savedKey.name = 'sonarrApiKey'; });
+      savedKey.addEventListener('blur', () => {
+        if (!savedKey.value) {
+          savedKey.removeAttribute('name');
+          savedKey.value = savedKey.defaultValue;
+        }
+      });
+    }
     applyTheme();
     const button = one('[data-theme-toggle]');
     if (button) button.addEventListener('click', () => {

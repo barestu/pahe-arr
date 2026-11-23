@@ -108,6 +108,31 @@ func CleanTitle(raw string) string {
 	return strings.TrimSpace(s)
 }
 
+// LatestEpisode provides a real release for the Newznab connection test feed.
+func (c *Client) LatestEpisode(ctx context.Context) (string, Episode, error) {
+	b, err := c.S.Get(ctx, c.base()+"/api?m=airing&page=1")
+	if err != nil {
+		return "", Episode{}, err
+	}
+	var page struct {
+		Data []struct {
+			Title   string      `json:"anime_title"`
+			Anime   string      `json:"anime_session"`
+			Session string      `json:"session"`
+			Number  json.Number `json:"episode"`
+		}
+	}
+	if err := json.Unmarshal(b, &page); err != nil {
+		return "", Episode{}, err
+	}
+	for _, e := range page.Data {
+		if _, err := strconv.Atoi(e.Number.String()); err == nil && e.Anime != "" && e.Session != "" && e.Title != "" {
+			return e.Title, Episode{e.Anime, e.Session, e.Number.String()}, nil
+		}
+	}
+	return "", Episode{}, fmt.Errorf("no recent AnimePahe episode available")
+}
+
 // Episodes returns every episode, following the release API's pagination.
 func (c *Client) Episodes(ctx context.Context, animeSession string) ([]Episode, error) {
 	var out []Episode

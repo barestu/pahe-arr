@@ -3,6 +3,11 @@
 <h1>Settings</h1>
 {{if .Saved}}<div class="alert ok">Settings saved.</div>{{end}}
 {{if .Error}}<div class="alert bad">{{.Error}}</div>{{end}}
+<section class="card">
+  <h2>Sonarr integration key</h2>
+  <p>Use this key in Sonarr for both the AnimePahe indexer and download client.</p>
+  <div id="integration-key" aria-live="polite">{{template "integration-key" .}}</div>
+</section>
 <form id="settings-form" method="post" action="/settings" class="settings">
 
   <section class="card">
@@ -51,8 +56,8 @@
     </div>
     <div class="field">
       <label for="sonarrApiKey">API key</label>
-      <input id="sonarrApiKey" name="sonarrApiKey" type="password" value="" placeholder="{{if .HasAPIKey}}Saved. Leave blank to keep it{{else}}Sonarr → Settings → General{{end}}" autocomplete="off">
-      {{if .HasAPIKey}}<label class="check"><input type="checkbox" name="clearApiKey"> Remove the saved key</label>{{end}}
+      <input id="sonarrApiKey" {{if .HasAPIKey}}data-saved-key{{else}}name="sonarrApiKey"{{end}} type="password" value="{{.SonarrMask}}" placeholder="Sonarr → Settings → General" autocomplete="off">
+      {{if .HasAPIKey}}<p class="hint">Leave blank to keep the saved key.</p><label class="check"><input type="checkbox" name="clearApiKey"> Remove the saved key</label>{{end}}
     </div>
     <div class="field">
       <label for="sonarrOutputDir">Output folder as Sonarr sees it</label>
@@ -98,4 +103,14 @@
   <div class="actions"><button class="btn primary" type="submit">Save settings</button></div>
 </form>
 {{end}}
+{{end}}
+
+{{define "integration-key"}}
+{{if .Error}}<p class="alert bad">{{.Error}}</p>{{end}}
+<div class="row integration-key-row">
+  <input id="generated-key" aria-label="Integration key" readonly value="{{.IntegrationMask}}">
+  <button type="button" id="copy-key" class="btn ghost icon-btn" aria-label="Copy integration key" title="Copy integration key" {{if not .IntegrationMask}}disabled{{end}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg></button>
+  <button type="button" class="btn" hx-post="/settings/integration-key" hx-target="#integration-key" hx-disabled-elt="this" {{if .IntegrationMask}}hx-confirm="Replace the current key? Update both AnimePahe entries in Sonarr afterward."{{end}}>{{if .IntegrationMask}}Regenerate key{{else}}Generate key{{end}}</button>
+</div>
+<p id="copy-status" role="status" class="hint"></p>
 {{end}}
