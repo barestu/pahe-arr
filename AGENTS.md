@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Go web app + CLI (`cmd/pahe`) that downloads animepahe episodes and hands them to Sonarr. Layout and user docs: `README.md`.
+Go web app + CLI (`cmd/pahe`) that downloads animepahe episodes and hands them to Sonarr. User docs are in `README.md`. Development setup and layout are in `CONTRIBUTING.md`.
 
 ## Commands
 
@@ -37,4 +37,4 @@ Go web app + CLI (`cmd/pahe`) that downloads animepahe episodes and hands them t
 
 ## Licensing
 
-`internal/pahe` and `internal/hls` are ported from barestu/animepahe-browser-dl (MIT). Keep `THIRD_PARTY_NOTICES.md` in sync if you add ported code.
+The ported code in `internal/pahe` and `internal/hls` is covered by the MIT notice in `THIRD_PARTY_NOTICES.md`. Keep the notices in sync if you add ported code.

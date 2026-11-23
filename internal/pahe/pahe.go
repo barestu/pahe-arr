@@ -1,5 +1,5 @@
 // Package pahe talks to animepahe: search, episode list and per-episode kwik sources.
-// Endpoints and parsing are ported from barestu/animepahe-browser-dl (MIT), src/lib/animepahe.ts.
+// See THIRD_PARTY_NOTICES.md for the MIT notice covering the ported endpoints and parsing.
 package pahe
 
 import (

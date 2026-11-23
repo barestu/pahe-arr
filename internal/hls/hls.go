@@ -1,7 +1,6 @@
 // Package hls downloads an HLS stream in Go: playlist, AES-128 keys and segments, decrypted and
-// written in order. Ported from barestu/animepahe-browser-dl (MIT), src/lib/hls.ts. Doing this
-// in Go, rather than letting ffmpeg fetch over the network, means every request carries exactly
-// the headers we choose.
+// written in order. The downloader controls the headers on each request.
+// See THIRD_PARTY_NOTICES.md for the MIT notice covering the ported download and decryption logic.
 package hls
 
 import (
