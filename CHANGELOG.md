@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.2.0
+
+- Search as you type and open titles on animepahe from search results or the anime page.
+- Select episode ranges with Shift-click. The episode picker now uses clicks, Shift-click, All, and None in place of the typed range field.
+- Simplify setup and download instructions and move local development details into the contributor guide.
+
 ## 0.1.1
 
 - Use literal environment defaults and explicit volume fields in the release
