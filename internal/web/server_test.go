@@ -138,19 +138,24 @@ func TestSettingsSaveKeepsAPIKey(t *testing.T) {
 	if got.PaheDomain != "animepahe.pw" || got.SonarrAPIKey != "abc" || got.DefaultQuality != 720 || got.DefaultAudio != "eng" || got.DefaultAutoImport {
 		t.Fatalf("saved: %+v", got)
 	}
-	form.Set("sonarrApiKey", "")
+	form.Del("sonarrApiKey")
 	post(t, c, ts, "/settings", form, false)
 	if s.Settings.Get().SonarrAPIKey != "abc" {
-		t.Fatal("blank API key should keep the saved one")
+		t.Fatal("omitted API key should keep the saved one")
 	}
 	res, _ = c.Get(ts.URL + "/settings")
 	if b := body(t, res); strings.Contains(b, "abc") || !strings.Contains(b, `value="***"`) {
 		t.Fatal("settings page must not echo the API key")
 	}
-	form.Set("clearApiKey", "on")
+	form.Set("sonarrApiKey", "new-key")
+	post(t, c, ts, "/settings", form, false)
+	if s.Settings.Get().SonarrAPIKey != "new-key" {
+		t.Fatal("replace key")
+	}
+	form.Set("sonarrApiKey", "")
 	post(t, c, ts, "/settings", form, false)
 	if s.Settings.Get().SonarrAPIKey != "" {
-		t.Fatal("clear API key")
+		t.Fatal("clear key")
 	}
 	form.Set("outputDir", "relative/path")
 	res = post(t, c, ts, "/settings", form, false)

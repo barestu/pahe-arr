@@ -37,7 +37,7 @@ func TestNativeGrab(t *testing.T) {
 	ts, s := newTestServer(t, "web-password")
 	defer ts.Close()
 	c := client()
-	for _, path := range []string{"/newznab/api?t=caps", "/sab/api?mode=queue"} {
+	for _, path := range []string{"/newznab/api?t=caps", "/api?mode=queue", "/sab/api?mode=queue"} {
 		res, err := c.Get(ts.URL + path)
 		if err != nil {
 			t.Fatal(err)
@@ -78,7 +78,7 @@ func TestNativeGrab(t *testing.T) {
 		}
 		part.Write([]byte(doc))
 		writer.Close()
-		res, err := c.Post(ts.URL+"/sab/api?mode=addfile&cat=pahe&apikey="+key, writer.FormDataContentType(), &raw)
+		res, err := c.Post(ts.URL+"/api?mode=addfile&cat=pahe&apikey="+key, writer.FormDataContentType(), &raw)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -183,7 +183,7 @@ func TestWebIntegrationKeyRotation(t *testing.T) {
 	stale := s.Settings.Get()
 	check := func(key string, status int) {
 		t.Helper()
-		for _, path := range []string{"/newznab/api?t=caps", "/sab/api?mode=version"} {
+		for _, path := range []string{"/newznab/api?t=caps", "/api?mode=version", "/sab/api?mode=version"} {
 			res, err := c.Get(ts.URL + path + "&apikey=" + key)
 			if err != nil {
 				t.Fatal(err)

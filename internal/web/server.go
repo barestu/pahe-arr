@@ -128,7 +128,8 @@ func (s *Server) Handler() (http.Handler, error) {
 	mux.HandleFunc("GET /queue/list", s.queueList)
 	mux.HandleFunc("POST /jobs/{id}/{action}", s.jobAction)
 	mux.HandleFunc("POST /jobs/clear", s.clearJobs)
-	mux.HandleFunc("POST /settings/integration-key/copy", s.copyIntegrationKey)
+	mux.HandleFunc("POST /settings/integration-key/copy", s.readSettingsKey)
+	mux.HandleFunc("POST /settings/sonarr-key/show", s.readSettingsKey)
 	mux.HandleFunc("POST /settings/integration-key", s.rotateIntegrationKey)
 	mux.HandleFunc("GET /settings", s.settingsPage)
 	mux.HandleFunc("POST /settings", s.saveSettings)
@@ -137,7 +138,9 @@ func (s *Server) Handler() (http.Handler, error) {
 	routes.Handle("/", s.secure(mux))
 	bridge := sonarrBridge{s: s}
 	routes.HandleFunc("/newznab/api", bridge.auth(bridge.indexer))
-	routes.HandleFunc("/sab/api", bridge.auth(bridge.client))
+	clientAPI := bridge.auth(bridge.client)
+	routes.HandleFunc("/api", clientAPI)
+	routes.HandleFunc("/sab/api", clientAPI)
 	return routes, nil
 }
 
@@ -526,9 +529,13 @@ func (s *Server) settingsPage(w http.ResponseWriter, r *http.Request) {
 
 func keyMask(key string) string { return strings.Repeat("*", len([]rune(key))) }
 
-func (s *Server) copyIntegrationKey(w http.ResponseWriter, r *http.Request) {
+func (s *Server) readSettingsKey(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-store")
-	key := s.Settings.Get().IntegrationKey
+	settings := s.Settings.Get()
+	key := settings.IntegrationKey
+	if r.URL.Path == "/settings/sonarr-key/show" {
+		key = settings.SonarrAPIKey
+	}
 	if key == "" {
 		http.NotFound(w, r)
 		return
@@ -547,7 +554,7 @@ func (s *Server) rotateIntegrationKey(w http.ResponseWriter, r *http.Request) {
 	s.partial(w, "settings", "integration-key", map[string]any{"IntegrationMask": keyMask(key)})
 }
 
-// formSettings reads the settings form; a blank API key keeps the saved one.
+// formSettings reads the settings form; an omitted API key keeps the saved one.
 func (s *Server) formSettings(r *http.Request) config.Settings {
 	cur := s.Settings.Get()
 	n := func(k string, def int) int {
@@ -569,11 +576,8 @@ func (s *Server) formSettings(r *http.Request) config.Settings {
 		Concurrency:       n("concurrency", cur.Concurrency),
 		DelaySeconds:      n("delaySeconds", cur.DelaySeconds),
 	}
-	if strings.TrimSpace(next.SonarrAPIKey) == "" {
+	if !r.Form.Has("sonarrApiKey") {
 		next.SonarrAPIKey = cur.SonarrAPIKey
-	}
-	if r.FormValue("clearApiKey") == "on" {
-		next.SonarrAPIKey = ""
 	}
 	return next.Normalize()
 }
@@ -590,7 +594,7 @@ func (s *Server) saveSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	prev := s.Settings.Get()
-	if err := s.Settings.Set(next); err != nil {
+	if err := s.Settings.SaveSettings(next, r.Form.Has("sonarrApiKey")); err != nil {
 		http.Error(w, "saving settings: "+err.Error(), http.StatusInternalServerError)
 		return
 	}

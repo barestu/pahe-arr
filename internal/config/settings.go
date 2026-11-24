@@ -161,11 +161,16 @@ func (st *Store) Get() Settings {
 	return st.s
 }
 
-func (st *Store) Set(s Settings) error {
+func (st *Store) Set(s Settings) error { return st.SaveSettings(s, true) }
+
+func (st *Store) SaveSettings(s Settings, updateSonarrKey bool) error {
 	s = s.Normalize()
 	st.mu.Lock()
 	defer st.mu.Unlock()
 	// A concurrent web settings save must preserve the current credential.
+	if !updateSonarrKey {
+		s.SonarrAPIKey = st.s.SonarrAPIKey
+	}
 	s.IntegrationKey = st.s.IntegrationKey
 	return st.writeLocked(s)
 }

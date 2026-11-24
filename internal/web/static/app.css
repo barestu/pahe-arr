@@ -275,3 +275,5 @@ progress::-moz-progress-bar { background: var(--accent); border-radius: 999px; }
 
 .integration-key-row input { min-width: 0; }
 #copy-status:empty { margin: 0; }
+
+[data-key-toggle][aria-pressed="false"] .eye-slash { display: none; }
