@@ -63,6 +63,80 @@
     });
   }
 
+  document.addEventListener('click', async event => {
+    const button = event.target.closest('[data-key-toggle]');
+    if (!button) return;
+    const field = document.getElementById(button.getAttribute('aria-controls'));
+    const status = one(field.id === 'generated-key' ? '#copy-status' : '#sonarrApiKey-status');
+    const show = button.getAttribute('aria-pressed') === 'false';
+    status.textContent = '';
+    button.disabled = true;
+    try {
+      if (show && !field.name) {
+        const response = await fetch(button.dataset.keyToggle, { method: 'POST', redirect: 'error' });
+        if (!response.ok) throw new Error();
+        const key = await response.text();
+        if (!field.name) field.value = key;
+      }
+      if (!show && !field.name) field.value = field.defaultValue;
+      field.type = show || field.id === 'generated-key' ? 'text' : 'password';
+      button.setAttribute('aria-pressed', String(show));
+      button.title = button.getAttribute('aria-label').replace('Show', show ? 'Hide' : 'Show');
+    } catch {
+      status.textContent = 'Could not show the key. Try again.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  document.addEventListener('click', async event => {
+    const button = event.target.closest('#copy-key');
+    if (!button) return;
+    const status = one('#copy-status');
+    try {
+      const response = await fetch('/settings/integration-key/copy', { method: 'POST', redirect: 'error' });
+      if (!response.ok) throw new Error();
+      const key = await response.text();
+      try {
+        await navigator.clipboard.writeText(key);
+      } catch {
+        const temp = document.createElement('textarea');
+        temp.className = 'sr-only';
+        temp.value = key;
+        document.body.append(temp);
+        try {
+          temp.select();
+          if (!document.execCommand('copy')) throw new Error();
+        } finally {
+          temp.remove();
+          button.focus();
+        }
+      }
+      status.textContent = 'Key copied.';
+    } catch {
+      status.textContent = 'Could not copy the key. Check clipboard permissions and try again.';
+    }
+  });
+
+  // A saved key starts as a mask. The first edit replaces it as one value.
+  document.addEventListener('beforeinput', event => {
+    const field = event.target;
+    if (field.id === 'sonarrApiKey' && !field.name && field.type === 'password') field.select();
+  });
+
+  document.addEventListener('input', event => {
+    const field = event.target;
+    if (field.id !== 'sonarrApiKey') return;
+    field.name = 'sonarrApiKey';
+    const toggle = one('[aria-controls="sonarrApiKey"]');
+    toggle.hidden = !field.value;
+    if (!field.value) {
+      field.type = 'password';
+      toggle.setAttribute('aria-pressed', 'false');
+      toggle.title = toggle.getAttribute('aria-label');
+    }
+  });
+
   document.addEventListener('DOMContentLoaded', () => {
     applyTheme();
     const button = one('[data-theme-toggle]');

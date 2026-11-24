@@ -128,10 +128,20 @@ func (s *Server) Handler() (http.Handler, error) {
 	mux.HandleFunc("GET /queue/list", s.queueList)
 	mux.HandleFunc("POST /jobs/{id}/{action}", s.jobAction)
 	mux.HandleFunc("POST /jobs/clear", s.clearJobs)
+	mux.HandleFunc("POST /settings/integration-key/copy", s.readSettingsKey)
+	mux.HandleFunc("POST /settings/sonarr-key/show", s.readSettingsKey)
+	mux.HandleFunc("POST /settings/integration-key", s.rotateIntegrationKey)
 	mux.HandleFunc("GET /settings", s.settingsPage)
 	mux.HandleFunc("POST /settings", s.saveSettings)
 	mux.HandleFunc("POST /settings/test/{target}", s.testSettings)
-	return s.secure(mux), nil
+	routes := http.NewServeMux()
+	routes.Handle("/", s.secure(mux))
+	bridge := sonarrBridge{s: s}
+	routes.HandleFunc("/newznab/api", bridge.auth(bridge.indexer))
+	clientAPI := bridge.auth(bridge.client)
+	routes.HandleFunc("/api", clientAPI)
+	routes.HandleFunc("/sab/api", clientAPI)
+	return routes, nil
 }
 
 // ---------- auth & security ----------
@@ -500,22 +510,51 @@ func (s *Server) clearJobs(w http.ResponseWriter, r *http.Request) {
 // ---------- settings ----------
 
 type settingsData struct {
-	S         config.Settings
-	HasAPIKey bool
-	Saved     bool
-	Error     string
-	Qualities []int
+	S               config.Settings
+	IntegrationMask string
+	SonarrMask      string
+	HasAPIKey       bool
+	Saved           bool
+	Error           string
+	Qualities       []int
 }
 
 func (s *Server) settingsPage(w http.ResponseWriter, r *http.Request) {
 	set := s.Settings.Get()
 	s.render(w, r, "settings", "Settings", "settings", settingsData{
-		S: set, HasAPIKey: set.SonarrAPIKey != "", Saved: r.URL.Query().Get("saved") != "",
+		S: set, IntegrationMask: keyMask(set.IntegrationKey), SonarrMask: keyMask(set.SonarrAPIKey), HasAPIKey: set.SonarrAPIKey != "", Saved: r.URL.Query().Get("saved") != "",
 		Qualities: []int{9999, 1080, 720, 480, 360},
 	})
 }
 
-// formSettings reads the settings form; a blank API key keeps the saved one.
+func keyMask(key string) string { return strings.Repeat("*", len([]rune(key))) }
+
+func (s *Server) readSettingsKey(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Cache-Control", "no-store")
+	settings := s.Settings.Get()
+	key := settings.IntegrationKey
+	if r.URL.Path == "/settings/sonarr-key/show" {
+		key = settings.SonarrAPIKey
+	}
+	if key == "" {
+		http.NotFound(w, r)
+		return
+	}
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	fmt.Fprint(w, key)
+}
+
+func (s *Server) rotateIntegrationKey(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Cache-Control", "no-store")
+	key, err := s.Settings.RotateIntegrationKey()
+	if err != nil {
+		s.partial(w, "settings", "integration-key", map[string]any{"IntegrationMask": keyMask(s.Settings.Get().IntegrationKey), "Error": "Could not save the new integration key."})
+		return
+	}
+	s.partial(w, "settings", "integration-key", map[string]any{"IntegrationMask": keyMask(key)})
+}
+
+// formSettings reads the settings form; an omitted API key keeps the saved one.
 func (s *Server) formSettings(r *http.Request) config.Settings {
 	cur := s.Settings.Get()
 	n := func(k string, def int) int {
@@ -537,11 +576,8 @@ func (s *Server) formSettings(r *http.Request) config.Settings {
 		Concurrency:       n("concurrency", cur.Concurrency),
 		DelaySeconds:      n("delaySeconds", cur.DelaySeconds),
 	}
-	if strings.TrimSpace(next.SonarrAPIKey) == "" {
+	if !r.Form.Has("sonarrApiKey") {
 		next.SonarrAPIKey = cur.SonarrAPIKey
-	}
-	if r.FormValue("clearApiKey") == "on" {
-		next.SonarrAPIKey = ""
 	}
 	return next.Normalize()
 }
@@ -554,11 +590,11 @@ func (s *Server) saveSettings(w http.ResponseWriter, r *http.Request) {
 	next := s.formSettings(r)
 	if next.OutputDir == "." || !filepath.IsAbs(next.OutputDir) {
 		set := s.Settings.Get()
-		s.render(w, r, "settings", "Settings", "settings", settingsData{S: next, HasAPIKey: set.SonarrAPIKey != "", Error: "Output folder must be an absolute path, e.g. /DATA/.manual-import", Qualities: []int{9999, 1080, 720, 480, 360}})
+		s.render(w, r, "settings", "Settings", "settings", settingsData{S: next, IntegrationMask: keyMask(set.IntegrationKey), SonarrMask: keyMask(set.SonarrAPIKey), HasAPIKey: set.SonarrAPIKey != "", Error: "Output folder must be an absolute path, e.g. /DATA/.manual-import", Qualities: []int{9999, 1080, 720, 480, 360}})
 		return
 	}
 	prev := s.Settings.Get()
-	if err := s.Settings.Set(next); err != nil {
+	if err := s.Settings.SaveSettings(next, r.Form.Has("sonarrApiKey")); err != nil {
 		http.Error(w, "saving settings: "+err.Error(), http.StatusInternalServerError)
 		return
 	}

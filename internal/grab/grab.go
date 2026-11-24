@@ -26,6 +26,7 @@ var (
 )
 
 type Options struct {
+	Exact       bool // Sonarr grabs must match the advertised quality and audio.
 	OutputDir   string
 	Title       string // folder and file title
 	Label       string // episode label, e.g. "02"
@@ -66,6 +67,9 @@ func Episode(ctx context.Context, c *pahe.Client, ep pahe.Episode, o Options, pr
 	src, ok := pahe.PickSource(sources, o.Quality, o.Audio)
 	if !ok {
 		return nil, fmt.Errorf("no streams on play page (%s)", pahe.DescribePlayPage(page))
+	}
+	if o.Exact && (src.Quality != o.Quality || src.Audio != o.Audio) {
+		return nil, fmt.Errorf("selected %dp %s stream is no longer available", o.Quality, o.Audio)
 	}
 	title := SafeName(o.Title)
 	label := o.Label

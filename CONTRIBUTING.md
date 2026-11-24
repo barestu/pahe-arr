@@ -13,7 +13,7 @@ stores settings and queue data in `tmp/config` and downloads in `tmp/downloads`.
 For live searches, set the animepahe domain and FlareSolverr URL in **Settings**.
 Install `ffmpeg` on your PATH to try downloads with the native app.
 
-To run the app and FlareSolverr together in Docker:
+To run pahe-arr, FlareSolverr, and a local test instance of Sonarr:
 
 ```sh
 docker compose -f docker-compose.local.yml up -d --build
@@ -22,6 +22,13 @@ docker compose -f docker-compose.local.yml up -d --build
 Open `http://localhost:8585` and test the connection settings. The app uses
 `http://flaresolverr:8191` and `/config/downloads` inside Docker. If you switch
 between native and Docker runs, update saved paths and URLs in **Settings**.
+Open Sonarr at `http://127.0.0.1:8989` and choose `/tv` as the library root
+when adding a test series. Sonarr stores its configuration and library under
+`tmp/sonarr/`. Both services see completed downloads at `/config/downloads`.
+Follow [Grab an episode from Sonarr](README.md#grab-an-episode-from-sonarr)
+using `pahe-arr` as the download client host and
+`http://pahe-arr:8585/newznab` as the indexer URL.
+
 To run only FlareSolverr in Docker, append `flaresolverr` to the Compose command
 and use `http://127.0.0.1:8191` in the native app.
 

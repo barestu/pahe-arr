@@ -39,3 +39,13 @@ With automatic import off, downloads stay in your output folder. In Sonarr, use 
 - If Sonarr can't find the file, check **Output folder as Sonarr sees it**. If it can't find the episode, check the numbering and offset.
 
 See the [contributor guide](CONTRIBUTING.md) for local development, tests, and CLI diagnostics.
+
+### Grab an episode from Sonarr
+
+In pahe-arr, open **Settings → Sonarr integration key → Generate key**. Copy the key into both Sonarr connections below. To replace it, click **Regenerate key** and update both entries in Sonarr. The new key takes effect immediately and survives restarts. Use the hostname and port that Sonarr can reach. Sonarr needs access to pahe-arr’s completed downloads for import. If the containers use different paths, configure a Remote Path Mapping in Sonarr for the pahe-arr host.
+
+1. Under **Settings → Download Clients**, add **SABnzbd**. Name it **AnimePahe**, enter the pahe-arr host and port (default `8585`), leave **URL Base** blank if shown, set **Category** to `pahe`, and enter the integration key. Test and save.
+2. Under **Settings → Indexers**, add a **Newznab** indexer. Set its URL to `http://HOST:8585/newznab`, API path to `/api`, and enter the same key. Select **TV/Anime (5070)** for anime categories. Enable **Interactive Search** only. Under advanced options assign the **AnimePahe** download client to this indexer. If you already use other Usenet indexers, explicitly assign each its usual client before enabling the AnimePahe client. This keeps ordinary NZBs on their existing download path.
+3. Open an episode of an **Anime** series with an absolute episode number. Run **Interactive Search**, choose an AnimePahe release by resolution and Sub/Dub, and click **Grab**. Follow it in **Activity**. Sonarr imports the completed MP4 through Completed Download Handling.
+
+The indexer matches the series title and absolute episode number. Ambiguous titles, missing episodes and season packs yield no result. The server log records skipped episode matches. If the selected audio or resolution disappears, the download fails after the normal queue retries. The stream’s byte size is unknown at search time.
