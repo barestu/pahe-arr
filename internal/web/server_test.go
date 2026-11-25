@@ -211,3 +211,16 @@ func TestEnqueue(t *testing.T) {
 		t.Fatalf("cancel: %s", b)
 	}
 }
+
+func TestVolarrBrand(t *testing.T) {
+	ts, _ := newTestServer(t, "secret")
+	defer ts.Close()
+	res, err := client().Get(ts.URL + "/login")
+	if err != nil {
+		t.Fatal(err)
+	}
+	page := body(t, res)
+	if !strings.Contains(page, "· Volarr</title>") || !strings.Contains(page, " Volarr</h1>") || strings.Contains(page, "pahe-arr") {
+		t.Error("login page should display Volarr in the title and branding")
+	}
+}
