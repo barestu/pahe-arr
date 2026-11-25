@@ -1,4 +1,4 @@
-# pahe-arr
+# Volarr
 
 Search animepahe, queue episode downloads, and optionally import them into Sonarr from a web UI.
 
@@ -17,6 +17,8 @@ For CasaOS, import `compose.release.yml` via **App Store → Custom Install → 
 To build from source instead, copy `.env.server.example` to `.env`, set `PAHE_PASSWORD`, and run `docker compose up -d --build` from the project root.
 
 Both Docker installs default to `./data/config` and `./data/downloads` on the host. To upgrade, back up the config and keep the same host folders. Use the Compose file from the newer release or rebuild from updated source.
+
+Both `volarr` and the legacy `pahe` command are available in the container. Existing Compose service names, environment variables, and storage paths continue to work.
 
 ## Configure
 

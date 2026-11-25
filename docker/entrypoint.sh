@@ -1,5 +1,5 @@
 #!/bin/sh
-# Runs pahe as PUID:PGID (default 1000:1000) so files match your media user, like linuxserver images.
+# Runs volarr as PUID:PGID (default 1000:1000) so files match your media user, like linuxserver images.
 set -e
 umask "${UMASK:-002}"
 if [ "$(id -u)" = "0" ]; then
@@ -7,6 +7,6 @@ if [ "$(id -u)" = "0" ]; then
   PGID="${PGID:-1000}"
   mkdir -p "$PAHE_CONFIG_DIR"
   chown -R "$PUID:$PGID" "$PAHE_CONFIG_DIR"
-  exec su-exec "$PUID:$PGID" pahe "$@"
+  exec su-exec "$PUID:$PGID" volarr "$@"
 fi
-exec pahe "$@"
+exec volarr "$@"

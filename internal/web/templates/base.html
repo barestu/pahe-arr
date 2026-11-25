@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="htmx-config" content='{"includeIndicatorStyles":false}'>
-<title>{{.Title}} · pahe-arr</title>
+<title>{{.Title}} · Volarr</title>
 <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
 <script src="/static/app.js"></script>
 <link rel="stylesheet" href="/static/app.css">
@@ -13,7 +13,7 @@
 <body>
 {{if .Nav}}
 <header class="top">
-  <a class="brand" href="/"><img src="/static/icon.svg" alt="" width="22" height="22"> pahe-arr</a>
+  <a class="brand" href="/"><img src="/static/icon.svg" alt="" width="22" height="22"> Volarr</a>
   <nav aria-label="Main">
     <a href="/" {{if eq .Nav "search"}}aria-current="page"{{end}}>Search</a>
     <a href="/queue" {{if eq .Nav "queue"}}aria-current="page"{{end}}>Queue</a>
@@ -27,6 +27,6 @@
 {{if and .Nav (ne .Nav "settings") (not .Ready)}}<div class="alert warn">Finish setup in <a href="/settings">Settings</a>: add the animepahe URL and FlareSolverr.</div>{{end}}
 {{template "content" .}}
 </main>
-<footer class="muted">pahe-arr {{version}}</footer>
+<footer class="muted">Volarr {{version}}</footer>
 </body>
 </html>{{end}}

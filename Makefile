@@ -8,4 +8,4 @@ test:
 	go test ./...
 
 run:
-	go run ./cmd/pahe serve
+	go run ./cmd/volarr serve
