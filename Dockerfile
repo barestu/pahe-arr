@@ -8,7 +8,7 @@ WORKDIR /src
 COPY go.mod go.sum* ./
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -ldflags="-s -w -X pahe-arr/internal/buildinfo.Version=$VERSION -X pahe-arr/internal/buildinfo.Commit=$REVISION" -o /out/pahe ./cmd/pahe
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -ldflags="-s -w -X pahe-arr/internal/buildinfo.Version=$VERSION -X pahe-arr/internal/buildinfo.Commit=$REVISION" -o /out/volarr ./cmd/volarr
 
 # ---- runtime: alpine + ffmpeg ----
 FROM alpine:3.20
@@ -18,7 +18,8 @@ LABEL org.opencontainers.image.source="https://github.com/barestu/pahe-arr" \
       org.opencontainers.image.version=$VERSION \
       org.opencontainers.image.revision=$REVISION
 RUN apk add --no-cache ffmpeg ca-certificates tzdata su-exec
-COPY --from=build /out/pahe /usr/local/bin/pahe
+COPY --from=build /out/volarr /usr/local/bin/volarr
+RUN ln -s volarr /usr/local/bin/pahe
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 ENV PAHE_CONFIG_DIR=/config PAHE_LISTEN=:8585
